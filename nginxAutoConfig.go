@@ -11,12 +11,12 @@ import (
 
 func main() {
 	var input uint
-	fmt.Println("--------------------------------------------------------------")
-	fmt.Println("Script to Automate nginx virtual server creation by Sid Sun.")
+	fmt.Println("-------------------------------------------------------------------------------")
+	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun.")
 	fmt.Println("Licensed under the MIT License.")
 	fmt.Println("By using this script, you agree to abide by the MIT License.")
 	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun).")
-	fmt.Println("--------------------------------------------------------------")
+	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
 	testWritePermissions()
 	input = takeInput()
