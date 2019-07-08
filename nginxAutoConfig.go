@@ -68,10 +68,10 @@ func main() {
 		}
 	case 6:
 		serverName := getServerName()
-		getURL(input)
+		directURL := getURL(input)
 		configFileName := createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 ' + directURL + ';\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 " + directURL + ";\n}\n"
 		if writeContentToFile(configFileName, configFileContents) {
 			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
 		}
