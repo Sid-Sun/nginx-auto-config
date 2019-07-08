@@ -17,4 +17,8 @@ Presets available:
 
 7: Configure to forward all HTTP requests to HTTPS
 
+Compiled binaries:
+
+Linux amd64/x86_64: https://cdn.sidsun.com/nginxAutoConfig/nginxAutoConfig-linux-amd64
+
 :)
