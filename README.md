@@ -21,4 +21,8 @@ Compiled binaries:
 
 Linux amd64/x86_64: https://cdn.sidsun.com/nginxAutoConfig/nginxAutoConfig-linux-amd64
 
+Debian Packages:
+
+amd64: https://cdn.sidsun.com/nginxAutoConfig/nginx-auto-config_1.1_amd64.deb
+
 :)
