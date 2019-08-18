@@ -72,6 +72,13 @@ func main() {
 		configFileName = createConfigFile(serverName)
 		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n"
 	case 8:
+		directURL := getURL(input)
+		portNumber := strconv.Itoa(getListeningPort())
+		serverName := getVirtualServerAlias()
+		configFileName = createConfigFile(serverName)
+		configFileContents = "server {\n    listen " + portNumber + ";\n    listen [::]:" + portNumber + ";\n    access_log off;\n    error_log /dev/null crit;\n"
+		configFileContents = configFileContents + "    server_name _;\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n}\n"
+	case 9:
 		return
 	default:
 		os.Exit(1)
@@ -82,7 +89,7 @@ func main() {
 func takeInput() uint {
 	var input int
 	fmt.Println("What do you want to do?")
-	fmt.Printf("\n1: Create static site config (with index).\n2: Create config to host files (w/o index)\n3: Create config for Angular/Vue production site with routing\n4: Proxy pass requests to a port or a site\n5: Serve a PHP site with fastcgi and php-fpm\n6: Permanent URL redirection to someplace else.\n7: Configure to forward all HTTP requests to HTTPS\n8: Exit\n")
+	fmt.Printf("\n1: Create static site config (with index).\n2: Create config to host files (w/o index)\n3: Create config for Angular/Vue production site with routing\n4: Proxy pass requests to a port or a site\n5: Serve a PHP site with fastcgi and php-fpm\n6: Permanent URL redirection to someplace else.\n7: Configure to forward all HTTP requests to HTTPS\n8: Port forward without hostname with custom port numbers\n9: Exit\n")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	scannedText := scanner.Text()
@@ -91,7 +98,7 @@ func takeInput() uint {
 		fmt.Println("Something went wrong, please try again.")
 		return takeInput()
 	}
-	if uint(input) > 8 {
+	if uint(input) > 9 {
 		fmt.Println("Enter a valid number.")
 		return takeInput()
 	}
@@ -112,8 +119,25 @@ func getRoot() string {
 	return scanner.Text()
 }
 
+func getListeningPort() int {
+	fmt.Println("Enter the port number the virtual server should listen to")
+	var input int
+	_, _ = fmt.Scanf("%d", &input)
+	if input == 0 {
+		return getListeningPort()
+	}
+	return input
+}
+
+func getVirtualServerAlias() string {
+	fmt.Println("Enter an alias for the virtual server (used for file name referencing)")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	return scanner.Text()
+}
+
 func getURL(option uint) string {
-	if option == 4 {
+	if option == 4 || option == 8 {
 		fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
 	} else if option == 6 {
 		fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done.")
