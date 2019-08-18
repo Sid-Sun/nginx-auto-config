@@ -20,73 +20,55 @@ func main() {
 	fmt.Printf("Let's  get started!\n\n")
 	testWritePermissions()
 	input = takeInput()
+	var configFileName string
+	var configFileContents string
 	switch input {
 	case 1:
 		serverName := getServerName()
 		rootPATH := getRoot()
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n        index index.html;\n    }\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 2:
 		serverName := getServerName()
 		rootPATH := getRoot()
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n    }\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 3:
 		serverName := getServerName()
 		rootPATH := getRoot()
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.html;\n    location / {\n        try_files $uri $uri/ @rewrites;\n    }\n    location @rewrites {\n        rewrite ^(.+)$ /index.html last;\n    }\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 4:
 		serverName := getServerName()
 		directURL := getURL(input)
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 5:
 		serverName := getServerName()
 		rootPATH := getRoot()
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.php;\n    location / {\n        try_files $uri $uri/ =404;\n        autoindex  on;\n        autoindex_exact_size off;\n        autoindex_localtime on;\n    }\n    location ~* \\.php$ {\n        include snippets/fastcgi-php.conf;\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;\n    }\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 6:
 		serverName := getServerName()
 		directURL := getURL(input)
-		configFileName := createConfigFile(serverName)
+		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
 		configFileContents = configFileContents + "    ssl_certificate /etc/certbot/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/certbot/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 " + directURL + ";\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
 	case 7:
 		serverName := "default"
-		configFileName := createConfigFile(serverName)
-		configFileContents := "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n"
-		if writeContentToFile(configFileName, configFileContents) {
-			fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", configFileName)
-		}
+		configFileName = createConfigFile(serverName)
+		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n"
 	case 8:
 		os.Exit(0)
 	default:
 		os.Exit(1)
 	}
+	writeContentToFile(configFileName, configFileContents)
 }
 
 func takeInput() uint {
@@ -153,13 +135,13 @@ func createConfigFile(serverName string) string {
 	return string(serverName + ".nginxAutoConfig.conf")
 }
 
-func writeContentToFile(fileName string, fileContents string) bool {
+func writeContentToFile(fileName string, fileContents string) {
 	testWritePermissions()
 	err := ioutil.WriteFile(fileName, []byte(fileContents), 0644)
 	if err != nil {
 		fmt.Println("Something went wrong, please send the log below to Sid Sun.")
 		fmt.Println(err)
-		return false
+		os.Exit(1)
 	}
-	return true
+	fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", fileName)
 }
