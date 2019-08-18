@@ -1,4 +1,4 @@
-# nginxAutoConfig
+# nginx-auto-config
 ## GoLang program to configure nginx virtual servers interactively 
 
 ### Presets available:
@@ -17,13 +17,15 @@
 
 7: Configure to forward all HTTP requests to HTTPS
 
+8: Port forward without hostname with custom port numbers
+
 ### Compiled binaries:
 
-> [Linux amd64 / x86_64](https://cdn.sidsun.com/nginxAutoConfig/nginxAutoConfig-linux-amd64)
+> [Linux amd64 / x86_64](https://cdn.sidsun.com/nginx-auto-config/nginx-auto-config_linux-amd64)
 
 ### Debian Packages:
 
-> [amd64](https://cdn.sidsun.com/nginxAutoConfig/nginx-auto-config_1.1_amd64.deb)
+> [amd64](https://cdn.sidsun.com/nginx-auto-config/nginx-auto-config.deb)
 
 ### Use YAPPA ( Yet Another Personal Package Archive ):
 
