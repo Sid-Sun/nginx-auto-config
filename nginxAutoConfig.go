@@ -154,6 +154,7 @@ func createConfigFile(serverName string) string {
 }
 
 func writeContentToFile(fileName string, fileContents string) bool {
+	testWritePermissions()
 	err := ioutil.WriteFile(fileName, []byte(fileContents), 0644)
 	if err != nil {
 		fmt.Println("Something went wrong, please send the log below to Sid Sun.")
