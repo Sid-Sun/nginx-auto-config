@@ -36,53 +36,61 @@ func main() {
 		rootPATH := getRoot()
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n        index index.html;\n    }\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n        index index.html;\n    }\n"
 	case 2:
 		serverName := getServerName()
 		rootPATH := getRoot()
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n    }\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n    }\n"
 	case 3:
 		serverName := getServerName()
 		rootPATH := getRoot()
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.html;\n    location / {\n        try_files $uri $uri/ @rewrites;\n    }\n    location @rewrites {\n        rewrite ^(.+)$ /index.html last;\n    }\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.html;\n    location / {\n        try_files $uri $uri/ @rewrites;\n    }\n    location @rewrites {\n        rewrite ^(.+)$ /index.html last;\n    }\n"
 	case 4:
 		serverName := getServerName()
 		directURL := getURL(input)
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n"
 	case 5:
 		serverName := getServerName()
 		rootPATH := getRoot()
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.php;\n    location / {\n        try_files $uri $uri/ =404;\n        autoindex  on;\n        autoindex_exact_size off;\n        autoindex_localtime on;\n    }\n    location ~* \\.php$ {\n        include snippets/fastcgi-php.conf;\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;\n    }\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.php;\n    location / {\n        try_files $uri $uri/ =404;\n        autoindex  on;\n        autoindex_exact_size off;\n        autoindex_localtime on;\n    }\n    location ~* \\.php$ {\n        include snippets/fastcgi-php.conf;\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;\n    }\n"
 	case 6:
 		serverName := getServerName()
 		directURL := getURL(input)
 		configFileName = createConfigFile(serverName)
 		configFileContents := "server {\n    listen 443;\n    listen [::]:443;\n    ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 " + directURL + ";\n}\n"
+		configFileContents = configFileContents + "    ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 " + directURL + ";\n"
 	case 7:
 		serverName := "default"
 		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n"
+		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n"
 	case 8:
 		directURL := getURL(input)
 		portNumber := strconv.Itoa(getListeningPort())
 		serverName := getVirtualServerAlias()
 		configFileName = createConfigFile(serverName)
 		configFileContents = "server {\n    listen " + portNumber + ";\n    listen [::]:" + portNumber + ";\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    server_name _;\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n}\n"
+		configFileContents = configFileContents + "    server_name _;\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n"
 	case 9:
 		return
 	default:
 		os.Exit(1)
 	}
+	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config)?\n(yes/no): ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	addSecurityOptions := scanner.Text()
+	if addSecurityOptions == "yes" {
+		configFileContents = configFileContents + "    #Turn off nginx version number displayed on all auto generated error pages\n    server_tokens off;\n    #Controlling Buffer Overflow Attacks\n    #Start: Size Limits & Buffer Overflows\n    client_body_buffer_size 1K;\n    client_header_buffer_size 1k;\n    client_max_body_size 1k;\n    large_client_header_buffers 2 1k;\n    #END: Size Limits & Buffer Overflows\n    #Start: Timeouts\n    client_body_timeout 10;\n    client_header_timeout 10;\n    keepalive_timeout 5 5;\n    send_timeout 10;\n    #End: Timeout\n    #Avoid clickjacking\n    add_header X-Frame-Options SAMEORIGIN;\n    #Disable content-type sniffing on some browsers\n    add_header X-Content-Type-Options nosniff;\n    #Enable the Cross-site scripting (XSS) filter\n    add_header X-XSS-Protection \"1; mode=block\";\n"
+	}
+	configFileContents = configFileContents + "}\n"
 	writeContentToFile(configFileName, configFileContents)
 }
 
