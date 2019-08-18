@@ -10,11 +10,19 @@ import (
 )
 
 func main() {
+	if len(os.Args) > 1 {
+		if os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help" {
+			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
+		} else {
+			fmt.Printf("Unknown option(s) %s, run with -h, -help or --help to get help or without any argumets to launch the program\n",os.Args[1])
+		}
+		return
+	}
 	var input uint
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun.")
 	fmt.Println("Licensed under the MIT License.")
-	fmt.Println("By using this script, you agree to abide by the MIT License.")
+	fmt.Println("By using this program, you agree to abide by the MIT License.")
 	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun).")
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
@@ -64,7 +72,7 @@ func main() {
 		configFileName = createConfigFile(serverName)
 		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n}\n"
 	case 8:
-		os.Exit(0)
+		return
 	default:
 		os.Exit(1)
 	}
