@@ -18,7 +18,6 @@ func main() {
 		}
 		return
 	}
-	var input uint
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun.")
 	fmt.Println("Licensed under the MIT License.")
@@ -27,7 +26,7 @@ func main() {
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
 	testWritePermissions()
-	input = takeInput()
+	input := takeInput()
 	var configFileName string
 	var configFileContents string
 	switch input {
@@ -100,7 +99,7 @@ func main() {
 	writeContentToFile(configFileName, configFileContents)
 }
 
-func takeInput() uint {
+func takeInput() int {
 	var input int
 	fmt.Println("What do you want to do?")
 	fmt.Printf("\n1: Create static site config (with index).\n2: Create config to host files (w/o index)\n3: Create config for Angular/Vue production site with routing\n4: Proxy pass requests to a port or a site\n5: Serve a PHP site with fastcgi and php-fpm\n6: Permanent URL redirection to someplace else.\n7: Configure to forward all HTTP requests to HTTPS\n8: Port forward without hostname with custom port numbers\n9: Exit\n")
@@ -112,11 +111,11 @@ func takeInput() uint {
 		fmt.Println("Something went wrong, please try again.")
 		return takeInput()
 	}
-	if uint(input) > 9 {
+	if input > 9 || input <= 0 {
 		fmt.Println("Enter a valid number.")
 		return takeInput()
 	}
-	return uint(input)
+	return input
 }
 
 func getServerName() string {
@@ -150,7 +149,8 @@ func getVirtualServerAlias() string {
 	return scanner.Text()
 }
 
-func getURL(option uint) string {
+
+func getURL(option int) string {
 	if option == 4 || option == 8 {
 		fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
 	} else if option == 6 {
