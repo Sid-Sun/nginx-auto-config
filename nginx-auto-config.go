@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -194,4 +195,28 @@ func writeContentToFile(fileName string, fileContents string) {
 
 func printCautionSSL()  {
 	fmt.Println("Caution: SSL config is commented out by default, please generate the key and point to it correctly as necessary.")
+}
+
+func GetString(EmptyAllowed bool, SingleWord bool) string {
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
+	if SingleWord {
+		ans := strings.Fields(input.Text())
+		if len(ans) == 0 {
+			if EmptyAllowed {
+				return ""
+			}
+			fmt.Println("This cannot be empty, please enter some text")
+			return GetString(false, true)
+		}
+		if len(ans) > 1 {
+			fmt.Println("More than one words entered, only first word will be used as name")
+		}
+		return ans[0]
+	}
+	if !EmptyAllowed && input.Text() == "" {
+		fmt.Println("This cannot be empty, please enter some text")
+		return GetString(false, false)
+	}
+	return input.Text()
 }
