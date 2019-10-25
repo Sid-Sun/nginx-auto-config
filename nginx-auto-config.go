@@ -1,14 +1,28 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"github.com/fatih/color"
 	"os"
 	"strconv"
 	"strings"
 )
+
+type service struct {
+	selection  int
+	domains    string
+	root       string
+	url        string
+	port       int
+	additional struct {
+		addHSTSConfig     bool
+		addSecurityConfig bool
+		makeDefaultServer bool
+	}
+}
+
+var yellow = color.New(color.FgYellow)
+var cyan = color.New(color.FgCyan)
 
 func main() {
 	if len(os.Args) > 1 {
@@ -20,203 +34,172 @@ func main() {
 		return
 	}
 	fmt.Println("-------------------------------------------------------------------------------")
-	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun.")
-	fmt.Println("Licensed under the MIT License.")
-	fmt.Println("By using this program, you agree to abide by the MIT License.")
-	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun).")
+	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun")
+	fmt.Println("Licensed under the MIT License")
+	fmt.Println("By using this program, you agree to abide by the MIT License")
+	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun)")
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
 	testWritePermissions()
-	input := takeInput()
-	var configFileName string
-	var configFileContents string
-	switch input {
-	case 1:
-		serverName := getServerName()
-		rootPATH := getRoot()
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n        index index.html;\n    }\n"
-		defer printCautionSSL()
-	case 2:
-		serverName := getServerName()
-		rootPATH := getRoot()
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        root " + rootPATH + ";\n    }\n"
-		defer printCautionSSL()
-	case 3:
-		serverName := getServerName()
-		rootPATH := getRoot()
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.html;\n    location / {\n        try_files $uri $uri/ @rewrites;\n    }\n    location @rewrites {\n        rewrite ^(.+)$ /index.html last;\n    }\n"
-		defer printCautionSSL()
-	case 4:
-		serverName := getServerName()
-		directURL := getURL(input)
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n"
-		defer printCautionSSL()
-	case 5:
-		serverName := getServerName()
-		rootPATH := getRoot()
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    root " + rootPATH + ";\n    index index.php;\n    location / {\n        try_files $uri $uri/ =404;\n        autoindex  on;\n        autoindex_exact_size off;\n        autoindex_localtime on;\n    }\n    location ~* \\.php$ {\n        include snippets/fastcgi-php.conf;\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;\n    }\n"
-		defer printCautionSSL()
-	case 6:
-		serverName := getServerName()
-		directURL := getURL(input)
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 443;\n    listen [::]:443;\n    #ssl on;\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    #ssl_certificate /etc/letsencrypt/live/" + serverName + "/fullchain.pem;\n    #ssl_certificate_key /etc/letsencrypt/live/" + serverName + "/privkey.pem;\n" + "    server_name " + serverName + ";\n    return 301 " + directURL + ";\n"
-		defer printCautionSSL()
-	case 7:
-		serverName := "default"
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen 80 default_server;\n    listen [::]:80 default_server;\n    access_log off;\n    error_log /dev/null crit;\n    server_name _;\n    return 301 https://$host$request_uri;\n"
-	case 8:
-		directURL := getURL(input)
-		portNumber := strconv.Itoa(getListeningPort())
-		serverName := getVirtualServerAlias()
-		configFileName = createConfigFile(serverName)
-		configFileContents = "server {\n    listen " + portNumber + ";\n    listen [::]:" + portNumber + ";\n    access_log off;\n    error_log /dev/null crit;\n"
-		configFileContents = configFileContents + "    server_name _;\n    location / {\n        proxy_pass " + directURL + ";\n        proxy_read_timeout  90;\n    }\n"
-	case 9:
+	var server service
+	server.selection = takeInput()
+	server.port = 443
+	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
+		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon")
+		_, _ = cyan.Print("Server Names: ")
+		server.domains = getInput(false, false)
+	}
+	if inRange(server.selection, []int{1, 2, 3, 4}) {
+		fmt.Println("Enter the path where the files are (root path for virtual server)")
+		_, _ = cyan.Print("Root path: ")
+		server.root = getInput(false, false)
+	}
+	if inRange(server.selection, []int{5, 6, 7}) {
+		if server.selection == 6 {
+			fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done.")
+			_, _ = cyan.Print("Redirect URL: ")
+		} else {
+			fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
+			_, _ = cyan.Print("Resource to proxy: ")
+		}
+		server.url = getInput(false, true)
+	}
+	if server.selection == 7 {
+		fmt.Println("Enter the port number the virtual server should listen to")
+		_, _ = cyan.Print("Port: ")
+		server.port = getInt()
+	}
+	if server.selection == 8 {
+		server.additional.makeDefaultServer = true
+		server.domains = "_"
+		server.port = 80
+	}
+	if server.selection == 9 {
 		return
-	default:
-		os.Exit(1)
 	}
-	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config)?\n(yes/no): ")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	addSecurityOptions := scanner.Text()
-	if addSecurityOptions == "yes" {
-		configFileContents = configFileContents + "    #Turn off nginx version number displayed on all auto generated error pages\n    server_tokens off;\n    #Controlling Buffer Overflow Attacks\n    #Start: Size Limits & Buffer Overflows\n    client_body_buffer_size 1K;\n    client_header_buffer_size 1k;\n    client_max_body_size 1k;\n    large_client_header_buffers 2 1k;\n    #END: Size Limits & Buffer Overflows\n    #Start: Timeouts\n    client_body_timeout 10;\n    client_header_timeout 10;\n    keepalive_timeout 5 5;\n    send_timeout 10;\n    #End: Timeout\n    #Avoid clickjacking\n    add_header X-Frame-Options SAMEORIGIN;\n    #Disable content-type sniffing on some browsers\n    add_header X-Content-Type-Options nosniff;\n    #Enable the Cross-site scripting (XSS) filter\n    add_header X-XSS-Protection \"1; mode=block\";\n"
+	fmt.Print("Do you want the virtual server to send HSTS preload header with the response? (yes/no): ")
+	_, _ = cyan.Print("\nSend HSTS Preload header (yes/no): ")
+	server.additional.addHSTSConfig = getConsent()
+	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config) (yes/no): ")
+	_, _ = cyan.Print("\nAdd security config (yes/no): ")
+	server.additional.addSecurityConfig = getConsent()
+	fileName, fileContents := PrepareServiceFileContents(server)
+	fmt.Print(fileContents)
+	_, _ = cyan.Print("Is this correct? (yes/no): ")
+	if getConsent() {
+		writeContentToFile(fileName+".nginxAutoConfig.conf", fileContents)
+		if server.port == 443 {
+			printCautionSSL()
+		}
 	}
-	configFileContents = configFileContents + "}\n"
-	writeContentToFile(configFileName, configFileContents)
+}
+
+func PrepareServiceFileContents(server service) (string, string) {
+	fileName := strings.Fields(server.domains)[0]
+	output := "server {"
+	if server.additional.makeDefaultServer {
+		output += "\n    listen " + strconv.Itoa(server.port) + " default_server;\n    listen [::]:" + strconv.Itoa(server.port) + " default_server;"
+	} else {
+		output += "\n    listen " + strconv.Itoa(server.port) + ";\n    listen [::]:" + strconv.Itoa(server.port) + ";"
+	}
+	output += "\n    server_name " + server.domains + ";"
+	output += "\n    access_log off;"
+	output += "\n    error_log /dev/null crit;"
+	if server.port == 443 {
+		output += "\n    #ssl on;"
+		output += "\n    #ssl_certificate /etc/letsencrypt/live/" + fileName + "/fullchain.pem;"
+		output += "\n    #ssl_certificate_key /etc/letsencrypt/live/" + fileName + "/privkey.pem;"
+	}
+	if server.additional.addHSTSConfig {
+		output += "\n    #Send HSTS header"
+		output += "\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\";"
+	}
+	switch server.selection {
+	case 1:
+		output += "\n    location / {"
+		output += "\n        index index.html;"
+		output += "\n        root " + server.root + ";"
+		output += "\n    }"
+	case 2:
+		output += "\n    location / {"
+		output += "\n        root " + server.root + ";"
+		output += "\n    }"
+	case 3:
+		output += "\n    root " + server.root + ";"
+		output += "\n    index index.html;"
+		output += "\n    location / {"
+		output += "\n        try_files $uri $uri/ @rewrites;"
+		output += "\n    }"
+		output += "\n    location @rewrites {"
+		output += "\n        rewrite ^(.+)$ /index.html last;"
+		output += "\n    }"
+	case 4:
+		output += "\n    root " + server.root + ";"
+		output += "\n    index index.php;"
+		output += "\n    location / {"
+		output += "\n        try_files $uri $uri/ =404;"
+		output += "\n        autoindex  on;"
+		output += "\n        autoindex_exact_size off;"
+		output += "\n        autoindex_localtime on;"
+		output += "\n    }"
+		output += "\n    location ~* \\.php$ {"
+		output += "\n        include snippets/fastcgi-php.conf;"
+		output += "\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;"
+		output += "\n    }"
+	case 5, 7:
+		output += "\n    location / {"
+		output += "\n        proxy_pass " + server.url + ";"
+		output += "\n        proxy_read_timeout  90;"
+		output += "\n    }"
+	case 6:
+		output += "\n    return 308 " + server.url + ";"
+	case 8:
+		fileName = "default"
+		output += "\n    return 308 https://$host$request_uri;"
+	}
+	if server.additional.addSecurityConfig {
+		output += "\n    #Turn off nginx version number displayed on all auto generated error pages"
+		output += "\n    server_tokens off;"
+		output += "\n    #Controlling Buffer Overflow Attacks"
+		output += "\n    #Start: Size Limits & Buffer Overflows"
+		output += "\n    client_body_buffer_size 1K;"
+		output += "\n    client_header_buffer_size 1k;"
+		output += "\n    client_max_body_size 1k;"
+		output += "\n    large_client_header_buffers 2 1k;"
+		output += "\n    #END: Size Limits & Buffer Overflows"
+		output += "\n    #Start: Timeouts"
+		output += "\n    client_body_timeout 10;"
+		output += "\n    client_header_timeout 10;"
+		output += "\n    keepalive_timeout 5 5;"
+		output += "\n    send_timeout 10;"
+		output += "\n    #End: Timeout"
+		output += "\n    #Avoid clickjacking"
+		output += "\n    add_header X-Frame-Options SAMEORIGIN;"
+		output += "\n    #Disable content-type sniffing on some browsers"
+		output += "\n    add_header X-Content-Type-Options nosniff;"
+		output += "\n    #Enable the Cross-site scripting (XSS) filter"
+		output += "\n    add_header X-XSS-Protection \"1; mode=block\";"
+	}
+	output += "\n}\n" //End server block and add newline at EOF
+	return fileName, output
 }
 
 func takeInput() int {
-	var input int
-	fmt.Println("What do you want to do?")
-	fmt.Printf("\n1: Create static site config (with index).\n2: Create config to host files (w/o index)\n3: Create config for Angular/Vue production site with routing\n4: Proxy pass requests to a port or a site\n5: Serve a PHP site with fastcgi and php-fpm\n6: Permanent URL redirection to someplace else.\n7: Configure to forward all HTTP requests to HTTPS\n8: Port forward without hostname with custom port numbers\n9: Exit\n")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	scannedText := scanner.Text()
-	input, err := strconv.Atoi(scannedText)
-	if err != nil {
-		fmt.Println("Something went wrong, please try again.")
-		return takeInput()
-	}
+	_, _ = yellow.Print("Options: \n")
+	fmt.Println("(1) Static website hosting - Host a static website")
+	fmt.Println("(2) Host files without index - Host files without an index")
+	fmt.Println("(3) Host a routed webapp - Host a React/Angular/Vue webapp")
+	fmt.Println("(4) PHP Website hosting - Host a PHP site with fastcgi and php-fpm")
+	fmt.Println("(5) Proxy requests - Proxy incoming requests to a port or a website")
+	fmt.Println("(6) Permanent URL redirection - Redirect all incoming requests to an address")
+	fmt.Println("(7) Proxy with custom port - Proxy incoming requests at a port to an address")
+	fmt.Println("(8) HTTP requests to HTTPS redirect - Redirects all incoming HTTP traffic to HTTPS (use as default config)")
+	fmt.Println("(9) Exit")
+	_, _ = cyan.Print("What do you want to do: ")
+	input := getInt()
 	if input > 9 || input <= 0 {
 		fmt.Println("Enter a valid number.")
 		return takeInput()
 	}
 	return input
-}
-
-func getServerName() string {
-	fmt.Println("Enter the domain/subdomain name(s) (separated by space and without the ending semicolon")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return scanner.Text()
-}
-
-func getRoot() string {
-	fmt.Println("Enter the path where the files are (root path for virtual server)")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return scanner.Text()
-}
-
-func getListeningPort() int {
-	fmt.Println("Enter the port number the virtual server should listen to")
-	var input int
-	_, _ = fmt.Scanf("%d", &input)
-	if input == 0 {
-		return getListeningPort()
-	}
-	return input
-}
-
-func getVirtualServerAlias() string {
-	fmt.Println("Enter an alias for the virtual server (used for file name referencing)")
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return scanner.Text()
-}
-
-
-func getURL(option int) string {
-	if option == 4 || option == 8 {
-		fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
-	} else if option == 6 {
-		fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done.")
-	}
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return scanner.Text()
-}
-
-func testWritePermissions() {
-	newFile, err := os.Create("nginxAutoConfig.test.txt")
-	if err != nil {
-		if os.IsPermission(err) {
-			log.Println("Error: Write permission denied, please cd into a workable dir, exiting.")
-			os.Exit(1)
-		}
-	} else {
-		_ = os.Remove("nginxAutoConfig.test.txt")
-		_ = newFile.Close()
-	}
-}
-
-func createConfigFile(serverName string) string {
-	configFileName := serverName + ".nginxAutoConfig.conf"
-	configFile, _ := os.Create(configFileName)
-	_ = configFile.Close()
-	return string(serverName + ".nginxAutoConfig.conf")
-}
-
-func writeContentToFile(fileName string, fileContents string) {
-	testWritePermissions()
-	err := ioutil.WriteFile(fileName, []byte(fileContents), 0644)
-	if err != nil {
-		fmt.Println("Something went wrong, please send the log below to Sid Sun.")
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", fileName)
-}
-
-func printCautionSSL()  {
-	fmt.Println("Caution: SSL config is commented out by default, please generate the key and point to it correctly as necessary.")
-}
-
-func GetString(EmptyAllowed bool, SingleWord bool) string {
-	input := bufio.NewScanner(os.Stdin)
-	input.Scan()
-	if SingleWord {
-		ans := strings.Fields(input.Text())
-		if len(ans) == 0 {
-			if EmptyAllowed {
-				return ""
-			}
-			fmt.Println("This cannot be empty, please enter some text")
-			return GetString(false, true)
-		}
-		if len(ans) > 1 {
-			fmt.Println("More than one words entered, only first word will be used as name")
-		}
-		return ans[0]
-	}
-	if !EmptyAllowed && input.Text() == "" {
-		fmt.Println("This cannot be empty, please enter some text")
-		return GetString(false, false)
-	}
-	return input.Text()
 }
