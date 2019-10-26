@@ -45,7 +45,7 @@ func main() {
 	server.selection = takeInput()
 	server.port = 443
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
-		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon")
+		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
 		server.domains = getInput(false, false)
 	}
@@ -56,7 +56,7 @@ func main() {
 	}
 	if inRange(server.selection, []int{5, 6, 7}) {
 		if server.selection == 6 {
-			fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done.")
+			fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done)")
 			_, _ = cyan.Print("Redirect URL: ")
 		} else {
 			fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
