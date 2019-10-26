@@ -14,11 +14,13 @@ type service struct {
 	root       string
 	url        string
 	port       int
-	additional struct {
-		addHSTSConfig     bool
-		addSecurityConfig bool
-		makeDefaultServer bool
-	}
+	additional additions
+}
+
+type additions struct {
+	addHSTSConfig     bool
+	addSecurityConfig bool
+	makeDefaultServer bool
 }
 
 var yellow = color.New(color.FgYellow)
