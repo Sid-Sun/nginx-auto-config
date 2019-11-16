@@ -140,6 +140,7 @@ jobs:
         run: |
           mkdir ~/.ssh
           cp ~/gh_actions_secrets/id_rsa ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           gpg --import ~/gh_actions_secrets/secret.asc
           ssh-keyscan github.com > ~/.ssh/known_hosts
           git config --global user.name $NAME
