@@ -172,17 +172,19 @@ jobs:
       - name: Commit changes
         shell: bash
         run: |
+           cd yappa
            git add -A
            git commit -s -S -m "update nginx-auto-config"
 
       - name: Push to dpeloyment
         shell: bash
-        run: git push origin
+        run: |
+          cd yappa
+          git push origin
 
       - name: Delete everything sensitive
         shell: bash
         run: |
-          cd ..
           rm -rf *
           rm -rf ~/.
           rm -rf ~/secrets
