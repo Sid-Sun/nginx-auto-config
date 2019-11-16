@@ -139,8 +139,8 @@ jobs:
         shell: bash
         run:
           mkdir ~/.ssh
-          cp ~/secrets/id_rsa ~/.ssh/id_rsa
-          gpg --import ~/secrets/secret.asc
+          cp ~/gh_actions_secrets/id_rsa ~/.ssh/id_rsa
+          gpg --import ~/gh_actions_secrets/secret.asc
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           GPG_KEY_ID=`gpg --with-fingerprint --verbose ./KEY.gpg 2>&1 | awk '/^sig/{ print $2 }' | tail -1`
           git config --global user.name $NAME
