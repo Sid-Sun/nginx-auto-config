@@ -109,39 +109,44 @@ jobs:
     name: Deploy
     needs: build_deb_package
     runs-on: ubuntu-latest
+    env:
+      EMAIL: "sid@sidsun.com"
+      NAME: "Sid Sun"
     steps:
       - name: Download the debian package
         uses: actions/download-artifact@v1
         with:
           name: debian-package
 
-      - name: Read version number
+      - name: Install package and read version number
         shell: bash
         run: |
           sudo dpkg -i debian-package/nginx-auto-config_amd64.deb
           export version=`nginx-auto-config version`
-          env > env.file
+          echo "export version=\"$version\"" > env.file
 
-      - name: Configure
+      - name: Get assets and decrypt data
         shell: bash
         env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
-          GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          EMAIL: ${{ secrets.EMAIL }}
-          NAME: ${{ secrets.NAME }}
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+        run: |
+          git clone https://github.com/Sid-Sun/github-actions-assets.git
+          cd github-actions-assets
+          ./decrypt_gpg_key.sh
+          ./decrypt_id_rsa.sh
+
+      - name: Configure git and GPG
+        shell: bash
         run:
           mkdir ~/.ssh
-          echo $PRIVATE_KEY > ~/.ssh/id_rsa
-          echo $PUBLIC_KEY > ~/.ssh/id_rsa.pub
-          cat ~/.ssh/id_rsa.pub
-          echo $GPG_KEY > secret.asc
-          gpg --import secret.asc
+          cp ~/secrets/id_rsa ~/.ssh/id_rsa
+          gpg --import ~/secrets/secret.asc
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+          GPG_KEY_ID=`gpg --with-fingerprint --verbose ./KEY.gpg 2>&1 | awk '/^sig/{ print $2 }' | tail -1`
           git config --global user.name $NAME
           git config --global user.email $EMAIL
           git config --global user.signingKey $GPG_KEY_ID
+          cd ..
 
       - name: Clone PPA
         shell: bash
@@ -155,8 +160,6 @@ jobs:
 
       - name: Update release and package files
         shell: bash
-        env:
-          EMAIL: ${{ secrets.EMAIL }}
         run: |
           cd yappa
           dpkg-scanpackages --multiversion . > Packages
@@ -180,4 +183,5 @@ jobs:
         run: |
           cd ..
           rm -rf *
-          rm -rf ~/.ssh
+          rm -rf ~/.
+          rm -rf ~/secrets
