@@ -30,6 +30,8 @@ func main() {
 	if len(os.Args) > 1 {
 		if os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help" {
 			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
+		} else if os.Args[1] == "version" {
+			fmt.Printf("3.0\n")
 		} else {
 			fmt.Printf("Unknown option(s) %s, run with -h, -help or --help to get help or without any argumets to launch the program\n", os.Args[1])
 		}
