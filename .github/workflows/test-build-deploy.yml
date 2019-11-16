@@ -176,15 +176,8 @@ jobs:
            git add -A
            git commit -s -m "update nginx-auto-config"
 
-      - name: Push to dpeloyment
+      - name: Push to deployment
         shell: bash
         run: |
           cd yappa
           git push origin
-
-      - name: Delete everything sensitive
-        shell: bash
-        run: |
-          rm -rf *
-          rm -rf ~/.
-          rm -rf ~/secrets
