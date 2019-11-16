@@ -13,23 +13,35 @@ jobs:
           go-version: 1.13
           id: go
 
-      - name: Check out code
-        uses: actions/checkout@v1
+      - name: Check-out code
+        shell: bash
+        run: |
+          mkdir -p /home/runner/go/bin
+          mkdir /home/runner/go/src
+          cd /home/runner/go/src
+          git clone https://github.com/sid-sun/nginx-auto-config.git
+          cd nginx-auto-config
 
       - name: Install dependencies
         run: |
+          cd /home/runner/go/src/nginx-auto-config
           go get -v -t -d ./...
           if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
+            /home/runner/go/bin/dep ensure
           fi
 
       - name: Run tests
+        shell: bash
         run: |
+          cd /home/runner/go/src/nginx-auto-config
           go test
 
       - name: Build binary
-        run: go build
+        run: |
+          cd /home/runner/go/src/nginx-auto-config
+          go build
+          cp nginx-auto-config /home/runner/work/nginx-auto-config/nginx-auto-config/.
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
@@ -50,30 +62,25 @@ jobs:
       - name: Read version and folder
         shell: bash
         run: |
+          chmod +x built-binary/nginx-auto-config
           export version=`built-binary/nginx-auto-config version`
           export folder=`echo nginx-auto-config_amd64`
-          env > env.file
+          echo "export version=\"$version\"" > env.file
+          echo "export folder=\"$folder\"" >> env.file
 
       - name: Setup folder structure
         shell: bash
         run: |
           source ./env.file
           mkdir -p $folder/usr/bin
-          mkdir -p $folder/etc/apt/sources.list.d
           mkdir $folder/DEBIAN
-
-      - name: Get sources list file
-        shell: bash
-        run: |
-          source ./env.file
-          curl -o $folder/etc/apt/sources.list.d/yappa.list https://raw.githubusercontent.com/Sid-Sun/yappa/master/yappa.list
 
       - name: Write control file
         shell: bash
         run: |
           source ./env.file
           echo "Package: nginx-auto-config" > $folder/DEBIAN/control
-          echo "Version: $version" >> $folder/DEBIAN/control
+          echo "Version: "$version >> $folder/DEBIAN/control
           echo "Maintainer: Sid Sun <sid@sidsun.com>" >> $folder/DEBIAN/control
           echo "Description: A program to create configurations for nginx interactively." >> $folder/DEBIAN/control
           echo "Homepage: https://github.com/sid-sun/nginx-auto-config" >> $folder/DEBIAN/control
@@ -124,9 +131,11 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           EMAIL: ${{ secrets.EMAIL }}
           NAME: ${{ secrets.NAME }}
-        run: |
+        run:
+          mkdir ~/.ssh
           echo $PRIVATE_KEY > ~/.ssh/id_rsa
           echo $PUBLIC_KEY > ~/.ssh/id_rsa.pub
+          cat ~/.ssh/id_rsa.pub
           echo $GPG_KEY > secret.asc
           gpg --import secret.asc
           ssh-keyscan github.com >> ~/.ssh/known_hosts
