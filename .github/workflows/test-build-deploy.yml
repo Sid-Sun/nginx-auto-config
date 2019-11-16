@@ -1,0 +1,174 @@
+name: Test, build and deploy to PPA
+
+on: [push]
+
+jobs:
+  build_binary:
+    name: Test and build binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+          id: go
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          go get -v -t -d ./...
+          if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+          fi
+
+      - name: Run tests
+        run: |
+          go test
+
+      - name: Build binary
+        run: go build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: built-binary
+          path: nginx-auto-config
+
+  build_deb_package:
+    name: Build Debian Package
+    needs: build_binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built binary
+        uses: actions/download-artifact@v1
+        with:
+          name: built-binary
+
+      - name: Read version and folder
+        shell: bash
+        run: |
+          export version=`built-binary/nginx-auto-config version`
+          export folder=`echo nginx-auto-config_amd64`
+          env > env.file
+
+      - name: Setup folder structure
+        shell: bash
+        run: |
+          source ./env.file
+          mkdir -p $folder/usr/bin
+          mkdir -p $folder/etc/apt/sources.list.d
+          mkdir $folder/DEBIAN
+
+      - name: Get sources list file
+        shell: bash
+        run: |
+          source ./env.file
+          curl -o $folder/etc/apt/sources.list.d/yappa.list https://raw.githubusercontent.com/Sid-Sun/yappa/master/yappa.list
+
+      - name: Write control file
+        shell: bash
+        run: |
+          source ./env.file
+          echo "Package: nginx-auto-config" > $folder/DEBIAN/control
+          echo "Version: $version" >> $folder/DEBIAN/control
+          echo "Maintainer: Sid Sun <sid@sidsun.com>" >> $folder/DEBIAN/control
+          echo "Description: A program to create configurations for nginx interactively." >> $folder/DEBIAN/control
+          echo "Homepage: https://github.com/sid-sun/nginx-auto-config" >> $folder/DEBIAN/control
+          echo "Architecture: amd64" >> $folder/DEBIAN/control
+
+      - name: Move binary to build folder
+        shell: bash
+        run: |
+          source ./env.file
+          cp built-binary/nginx-auto-config $folder/usr/bin/.
+
+      - name: Build debian package
+        shell: bash
+        run: |
+          source ./env.file
+          dpkg-deb --build $folder
+          file="echo $folder.deb"
+
+      - name: Upload debian package
+        uses: actions/upload-artifact@v1
+        with:
+          name: debian-package
+          path: nginx-auto-config_amd64.deb
+
+  deploy:
+    name: Deploy
+    needs: build_deb_package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the debian package
+        uses: actions/download-artifact@v1
+        with:
+          name: debian-package
+
+      - name: Read version number
+        shell: bash
+        run: |
+          sudo dpkg -i debian-package/nginx-auto-config_amd64.deb
+          export version=`nginx-auto-config version`
+          env > env.file
+
+      - name: Configure
+        shell: bash
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+          GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          EMAIL: ${{ secrets.EMAIL }}
+          NAME: ${{ secrets.NAME }}
+        run: |
+          echo $PRIVATE_KEY > ~/.ssh/id_rsa
+          echo $PUBLIC_KEY > ~/.ssh/id_rsa.pub
+          echo $GPG_KEY > secret.asc
+          gpg --import secret.asc
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global user.name $NAME
+          git config --global user.email $EMAIL
+          git config --global user.signingKey $GPG_KEY_ID
+
+      - name: Clone PPA
+        shell: bash
+        run: git clone git@github.com:Sid-Sun/yappa.git
+
+      - name: Copy artifacts to PPA
+        shell: bash
+        run: |
+          source ./env.file
+          cp debian-package/nginx-auto-config_amd64.deb yappa/nginx-auto-config_$version_amd64.deb
+
+      - name: Update release and package files
+        shell: bash
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+        run: |
+          cd yappa
+          dpkg-scanpackages --multiversion . > Packages
+          gzip -k -f Packages
+          apt-ftparchive release . > Release
+          gpg --default-key "${EMAIL}" -abs -o - Release > Release.gpg
+          gpg --default-key "${EMAIL}" --clearsign -o - Release > InRelease
+
+      - name: Commit changes
+        shell: bash
+        run: |
+           git add -A
+           git commit -s -S -m "update nginx-auto-config"
+
+      - name: Push to dpeloyment
+        shell: bash
+        run: git push origin
+
+      - name: Delete everything sensitive
+        shell: bash
+        run: |
+          cd ..
+          rm -rf *
+          rm -rf ~/.ssh
