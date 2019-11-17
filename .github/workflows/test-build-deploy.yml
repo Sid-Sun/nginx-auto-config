@@ -143,10 +143,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           gpg --import ~/gh_actions_secrets/secret.asc
           ssh-keyscan github.com > ~/.ssh/known_hosts
+          GPG_KEY_ID=`gpg --with-fingerprint --verbose github-actions-assets/KEY.gpg 2>&1 | awk '/^sig/{ print $2 }' | tail -1`
           git config --global user.name $NAME
-          git config --list
           git config --global user.email $EMAIL
-          git config --list
+          git config --global user.signingKey $GPG_KEY_ID
           cd ..
 
       - name: Clone PPA
