@@ -174,7 +174,7 @@ jobs:
         run: |
            cd yappa
            git add -A
-           git commit -s -m "update nginx-auto-config"
+           git commit -s -S -m "update nginx-auto-config"
 
       - name: Push to deployment
         shell: bash
