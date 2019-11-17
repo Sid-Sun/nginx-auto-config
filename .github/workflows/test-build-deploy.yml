@@ -157,7 +157,7 @@ jobs:
         shell: bash
         run: |
           source ./env.file
-          cp debian-package/nginx-auto-config_amd64.deb yappa/nginx-auto-config_$version_amd64.deb
+          cp debian-package/nginx-auto-config_amd64.deb yappa/nginx-auto-config_"$version"_amd64.deb
 
       - name: Update release and package files
         shell: bash
