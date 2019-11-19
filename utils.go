@@ -92,3 +92,18 @@ func writeContentToFile(fileName string, fileContents string) {
 func printCautionSSL() {
 	_, _ = yellow.Println("Caution: SSL config is commented out by default, please generate the key and point to it correctly as necessary.")
 }
+
+func dirExists(path string) bool {
+	// Stat the file
+	info, err := os.Stat(path)
+
+	// If there is error check if the file is non existent
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+
+	// Else check if the path is actually a directory and return accordingly
+	return info.IsDir()
+}
