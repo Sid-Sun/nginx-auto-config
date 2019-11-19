@@ -176,6 +176,15 @@ jobs:
            git add -A
            git commit -s -S -m "update nginx-auto-config"
 
+      - name: Push to file hosting
+        shell: bash
+        env:
+          PORT: ${{ secrets.HOSTING_PORT }}
+          USER: ${{ secrets.HOSTING_USER}}
+          HOST: ${{ secrets.HOST }}
+        run: |
+           ./github-actions-assets/nginx-push-to-hosting.sh
+
       - name: Push to deployment
         shell: bash
         run: |
