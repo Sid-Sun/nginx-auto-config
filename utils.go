@@ -36,7 +36,8 @@ func getInput(EmptyAllowed bool, SingleWorded bool) string {
 }
 
 func getConsent() bool {
-	if strings.ToLower(getInput(false, true)) == "yes" {
+	consent := string([]rune(getInput(false, true))[:1])
+	if strings.ToLower(consent) == "y" {
 		return true
 	}
 	return false
