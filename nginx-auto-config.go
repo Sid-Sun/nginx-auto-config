@@ -31,7 +31,7 @@ func main() {
 		if os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help" {
 			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
 		} else if os.Args[1] == "version" {
-			fmt.Printf("3.0\n")
+			fmt.Printf("3.1\n")
 		} else {
 			fmt.Printf("Unknown option(s) %s, run with -h, -help or --help to get help or without any argumets to launch the program\n", os.Args[1])
 		}
@@ -81,15 +81,15 @@ func main() {
 	if server.selection == 9 {
 		return
 	}
-	fmt.Print("Do you want the virtual server to send HSTS preload header with the response? (yes/no): ")
-	_, _ = cyan.Print("\nSend HSTS Preload header (yes/no): ")
+	fmt.Print("Do you want the virtual server to send HSTS preload header with the response? (Y[es]/N[o]): ")
+	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/N[o]): ")
 	server.additional.addHSTSConfig = getConsent()
-	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config) (yes/no): ")
-	_, _ = cyan.Print("\nAdd security config (yes/no): ")
+	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config) (Y[es]/N[o]): ")
+	_, _ = cyan.Print("\nAdd security config (Y[es]/N[o]): ")
 	server.additional.addSecurityConfig = getConsent()
 	fileName, fileContents := PrepareServiceFileContents(server)
 	fmt.Print(fileContents)
-	_, _ = cyan.Print("Is this correct? (yes/no): ")
+	_, _ = cyan.Print("Is this correct? (Y[es]/N[o]): ")
 	if getConsent() {
 		writeContentToFile(fileName+".nginxAutoConfig.conf", fileContents)
 		if server.port == 443 {
