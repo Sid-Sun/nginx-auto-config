@@ -114,7 +114,6 @@ func main() {
 		if server.port == 443 {
 			printCautionSSL()
 		}
-		os.Exit(0)
 	}
 
 	os.Exit(0)
