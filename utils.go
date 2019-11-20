@@ -112,7 +112,7 @@ func verifyDirInput() string {
 		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
 		_, _ = cyan.Print("Root path: ")
 		return verifyDirInput()
-	} else {
-		return dirName
 	}
+
+	return dirName
 }
