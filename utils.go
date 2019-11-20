@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	pathlib "path"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -112,6 +114,12 @@ func verifyDirInput() string {
 		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
 		_, _ = cyan.Print("Root path: ")
 		return verifyDirInput()
+	}
+
+	// If the dirname is not absloute path, return a absloute path
+	if !pathlib.IsAbs(dirName) {
+		absPath, _ := filepath.Abs(dirName)
+		return absPath
 	}
 
 	return dirName
