@@ -104,3 +104,15 @@ func dirExists(path string) bool {
 	// Else check if the path is actually a directory and return accordingly
 	return info.IsDir()
 }
+
+func verifyDirInput() string {
+	dirName := getInput(false, false)
+
+	if !dirExists(dirName) {
+		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
+		_, _ = cyan.Print("Root path: ")
+		return verifyDirInput()
+	} else {
+		return dirName
+	}
+}
