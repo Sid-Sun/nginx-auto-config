@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const sVers string = "4.2"	// Program Version
+const sVers string = "4.3"	// Program Version
 
 type service struct {
 	selection  int
