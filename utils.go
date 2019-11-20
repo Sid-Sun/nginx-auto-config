@@ -37,10 +37,7 @@ func getInput(EmptyAllowed bool, SingleWorded bool) string {
 
 func getConsent() bool {
 	consent := string([]rune(getInput(false, true))[:1])
-	if strings.ToLower(consent) == "y" {
-		return true
-	}
-	return false
+	return strings.ToLower(consent) == "y"
 }
 func getInt() int {
 	input, err := strconv.Atoi(getInput(false, true))
