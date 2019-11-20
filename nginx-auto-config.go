@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const sVers string = "4.0"	// Program Version
+
 type service struct {
 	selection  int
 	domains    string
@@ -30,22 +32,22 @@ var red = color.New(color.FgRed)
 
 func main() {
 	var server service
-	server.verifyRoot = true
 
 	if len(os.Args) > 1 {
-		pArgs := os.Args[1]
-		if pArgs == "-h" || pArgs == "-help" || pArgs == "--help" {
+		pArg := os.Args[1]
+		if pArg == "-h" || pArg == "-help" || pArg == "--help" {
 			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
-			os.Exit(0)
-		} else if pArgs == "version" {
-			fmt.Printf("3.2\n")
-			os.Exit(0)
-		} else if pArgs == "-skiproot" || pArgs == "-s" || pArgs == "--skiproot" {
-			server.verifyRoot = false
+		} else if pArg == "--version" || pArg == "-v" || pArg == "-version" {
+			fmt.Println(sVers)
 		} else {
-			fmt.Printf("Unknown option(s) %s, run with -h, -help or --help to get help, -s, -skiproot or --skiproot to skip server root directory validation or without any argumets to launch the program\n", pArgs)
+			fmt.Printf(
+					"Unknown option(s) %s\n" +
+						"Run with -h, -help or --help to get help\n" +
+						"-v or version to get program version\n" +
+						"Or without any argumets to launch the program interactively\n", pArg)
 			os.Exit(1)
 		}
+		os.Exit(0)
 	}
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun")
@@ -57,6 +59,8 @@ func main() {
 	testWritePermissions()
 	server.selection = takeInput()
 	server.port = 443
+	_, _ = cyan.Print("Are you creating this configuration to deploy on this machine? Y[es]/N[o]: ")
+	server.verifyRoot = getConsent()
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
 		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
@@ -65,13 +69,13 @@ func main() {
 	if inRange(server.selection, []int{1, 2, 3, 4}) {
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
-		rootPath := getInput(false, false)
-		if server.verifyRoot && !dirExists(rootPath) {
-			_, _ = red.Printf("Server root directory: '%v' is non existent. Please try again\n", rootPath)
-			os.Exit(1)
+		var rootPath string
+		if server.verifyRoot {
+			rootPath = verifyDirInput()
 		} else {
-			server.root = rootPath
+			rootPath = getInput(false, false)
 		}
+		server.root = rootPath
 	}
 	if inRange(server.selection, []int{5, 6, 7}) {
 		if server.selection == 6 {
@@ -94,7 +98,7 @@ func main() {
 		server.port = 80
 	}
 	if server.selection == 9 {
-		os.Exit(1)
+		os.Exit(0)
 	}
 	fmt.Print("Do you want the virtual server to send HSTS preload header with the response? (Y[es]/N[o]): ")
 	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/N[o]): ")
@@ -224,4 +228,16 @@ func takeInput() int {
 		return takeInput()
 	}
 	return input
+}
+
+func verifyDirInput() string {
+	dirName := getInput(false, false)
+
+	if !dirExists(dirName) {
+		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
+		_, _ = cyan.Print("Root path: ")
+		return verifyDirInput()
+	} else {
+		return dirName
+	}
 }
