@@ -41,9 +41,9 @@ func main() {
 			fmt.Println(sVers)
 		} else {
 			fmt.Printf(
-					"Unknown option(s) %s\n" +
+					"Unknown option: %s\n" +
 						"Run with -h, -help or --help to get help\n" +
-						"-v or version to get program version\n" +
+						"-v, -version or --version to get program version\n" +
 						"Or without any argumets to launch the program interactively\n", pArg)
 			os.Exit(1)
 		}
@@ -228,16 +228,4 @@ func takeInput() int {
 		return takeInput()
 	}
 	return input
-}
-
-func verifyDirInput() string {
-	dirName := getInput(false, false)
-
-	if !dirExists(dirName) {
-		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
-		_, _ = cyan.Print("Root path: ")
-		return verifyDirInput()
-	} else {
-		return dirName
-	}
 }
