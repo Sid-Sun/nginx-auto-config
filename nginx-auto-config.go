@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const sVers string = "4.0"	// Program Version
+const sVers string = "4.2"	// Program Version
 
 type service struct {
 	selection  int
@@ -59,14 +59,14 @@ func main() {
 	testWritePermissions()
 	server.selection = takeInput()
 	server.port = 443
-	_, _ = cyan.Print("Are you creating this configuration to deploy on this machine? Y[es]/N[o]: ")
-	server.verifyRoot = getConsent()
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
 		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
 		server.domains = getInput(false, false)
 	}
 	if inRange(server.selection, []int{1, 2, 3, 4}) {
+		_, _ = cyan.Print("Are you creating this configuration to deploy on this machine? Y[es]/N[o]: ")
+		server.verifyRoot = getConsent()
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
 		var rootPath string
