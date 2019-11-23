@@ -22,7 +22,7 @@ func getInput(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) string
 				return ""
 			}
 			fmt.Println("This cannot be empty")
-			_,_ = cyan.Print(RepeatMessage)
+			_, _ = cyan.Print(RepeatMessage)
 			return getInput(false, true, RepeatMessage)
 		}
 		if len(ans) > 1 {
@@ -32,7 +32,7 @@ func getInput(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) string
 	}
 	if !EmptyAllowed && input.Text() == "" {
 		fmt.Println("This cannot be empty")
-		_,_ = cyan.Print(RepeatMessage)
+		_, _ = cyan.Print(RepeatMessage)
 		return getInput(false, false, RepeatMessage)
 	}
 	return input.Text()
@@ -113,8 +113,8 @@ func dirExists(path string) bool {
 }
 
 func verifyDirInput() string {
-	_,_ = cyan.Print("Root path: ")
-	dirName := getInput(false, false,"Root path: ")
+	_, _ = cyan.Print("Root path: ")
+	dirName := getInput(false, false, "Root path: ")
 
 	if !dirExists(dirName) {
 		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)

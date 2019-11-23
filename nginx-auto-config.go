@@ -40,10 +40,10 @@ func main() {
 			fmt.Println(version)
 		} else {
 			fmt.Printf(
-					"Unknown option: %s\n" +
-						"Run with -h, -help or --help to get help\n" +
-						"-v, -version or --version to get program version\n" +
-						"Or without any argumets to launch the program interactively\n", pArg)
+				"Unknown option: %s\n"+
+					"Run with -h, -help or --help to get help\n"+
+					"-v, -version or --version to get program version\n"+
+					"Or without any argumets to launch the program interactively\n", pArg)
 			os.Exit(1)
 		}
 		os.Exit(0)
@@ -68,7 +68,7 @@ func main() {
 		_, _ = cyan.Print("Root path: ")
 		server.root = getInput(false, false, "Root path: ")
 		if !dirExists(server.root) {
-			_,_ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", server.root)
+			_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", server.root)
 			_, _ = cyan.Print("Keep non-existent directory (Y[es]/N[o]): ")
 			verifyRoot := !getConsent(true)
 			if verifyRoot {
@@ -89,7 +89,7 @@ func main() {
 	if server.selection == 7 {
 		fmt.Println("Enter the port number the virtual server should listen to")
 		_, _ = cyan.Print("Port: ")
-		server.port = getInt(false,"Port: ")
+		server.port = getInt(false, "Port: ")
 	}
 	if server.selection == 8 {
 		server.additional.makeDefaultServer = true
@@ -220,7 +220,7 @@ func takeInput() int {
 	fmt.Println("(8) HTTP requests to HTTPS redirect - Redirects all incoming HTTP traffic to HTTPS (use as default config)")
 	fmt.Println("(9) Exit")
 	_, _ = cyan.Print("What do you want to do: ")
-	input := getInt(false,"What do you want to do: ")
+	input := getInt(false, "What do you want to do: ")
 	if input > 9 || input <= 0 {
 		fmt.Println("Enter a valid number.")
 		return takeInput()
