@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func getInput(EmptyAllowed bool, SingleWorded bool) string {
+func getInput(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) string {
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
 	if SingleWorded {
@@ -21,8 +21,9 @@ func getInput(EmptyAllowed bool, SingleWorded bool) string {
 			if EmptyAllowed {
 				return ""
 			}
-			fmt.Println("This cannot be empty, please enter some text")
-			return getInput(false, true)
+			fmt.Println("This cannot be empty")
+			_,_ = cyan.Print(RepeatMessage)
+			return getInput(false, true, RepeatMessage)
 		}
 		if len(ans) > 1 {
 			fmt.Println("More than one words entered, only first word will be used as name")
@@ -30,21 +31,26 @@ func getInput(EmptyAllowed bool, SingleWorded bool) string {
 		return ans[0]
 	}
 	if !EmptyAllowed && input.Text() == "" {
-		fmt.Println("This cannot be empty, please enter some text")
-		return getInput(false, false)
+		fmt.Println("This cannot be empty")
+		_,_ = cyan.Print(RepeatMessage)
+		return getInput(false, false, RepeatMessage)
 	}
 	return input.Text()
 }
 
-func getConsent() bool {
-	consent := string([]rune(getInput(false, true))[:1])
-	return strings.ToLower(consent) == "y"
+func getConsent(Default bool) bool {
+	consent := getInput(true, true, "")
+	if consent == "" {
+		return Default
+	}
+	return strings.ToLower(string([]rune(consent)[0])) == "y"
 }
-func getInt() int {
-	input, err := strconv.Atoi(getInput(false, true))
+
+func getInt(EmptyAllowed bool, RepeatMessage string) int {
+	input, err := strconv.Atoi(getInput(EmptyAllowed, true, RepeatMessage))
 	if err != nil {
 		color.Red("Please enter a number")
-		return getInt()
+		return getInt(EmptyAllowed, RepeatMessage)
 	}
 	return input
 }
@@ -107,7 +113,8 @@ func dirExists(path string) bool {
 }
 
 func verifyDirInput() string {
-	dirName := getInput(false, false)
+	_,_ = cyan.Print("Root path: ")
+	dirName := getInput(false, false,"Root path: ")
 
 	if !dirExists(dirName) {
 		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
