@@ -12,34 +12,64 @@ import (
 	"strings"
 )
 
-func getInput(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) string {
+type getInputConfig struct {
+	EmptyAllowed  bool
+	SingleWorded  bool
+	RepeatMessage string
+}
+
+func newGetInputConfig(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) getInputConfig {
+	return getInputConfig{
+		EmptyAllowed:  EmptyAllowed,
+		SingleWorded:  SingleWorded,
+		RepeatMessage: RepeatMessage,
+	}
+}
+
+func getRoot() string {
+	inputConfig := newGetInputConfig(false, false, "Root path: ")
+	dir := getInput(inputConfig)
+	if !dirExists(dir) {
+		_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", dir)
+		_, _ = cyan.Print("Keep non-existent directory (Y[es]/N[o]): ")
+		verifyRoot := !getConsent(true)
+		if !verifyRoot {
+			return dir
+		}
+		dir = verifyDirInput()
+	}
+	return getAbsolutePath(dir)
+}
+
+func getInput(config getInputConfig) string {
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
-	if SingleWorded {
+	if config.SingleWorded {
 		ans := strings.Fields(input.Text())
 		if len(ans) == 0 {
-			if EmptyAllowed {
+			if config.EmptyAllowed {
 				return ""
 			}
 			fmt.Println("This cannot be empty")
-			_, _ = cyan.Print(RepeatMessage)
-			return getInput(false, true, RepeatMessage)
+			_, _ = cyan.Print(config.RepeatMessage)
+			return getInput(config)
 		}
 		if len(ans) > 1 {
 			fmt.Println("More than one words entered, only first word will be used as name")
 		}
 		return ans[0]
 	}
-	if !EmptyAllowed && input.Text() == "" {
+	if !config.EmptyAllowed && input.Text() == "" {
 		fmt.Println("This cannot be empty")
-		_, _ = cyan.Print(RepeatMessage)
-		return getInput(false, false, RepeatMessage)
+		_, _ = cyan.Print(config.RepeatMessage)
+		return getInput(config)
 	}
 	return input.Text()
 }
 
 func getConsent(Default bool) bool {
-	consent := getInput(true, true, "")
+	inputConfig := newGetInputConfig(true, true, "")
+	consent := getInput(inputConfig)
 	if consent == "" {
 		return Default
 	}
@@ -47,7 +77,8 @@ func getConsent(Default bool) bool {
 }
 
 func getInt(EmptyAllowed bool, RepeatMessage string) int {
-	input, err := strconv.Atoi(getInput(EmptyAllowed, true, RepeatMessage))
+	inputConfig := newGetInputConfig(EmptyAllowed, true, RepeatMessage)
+	input, err := strconv.Atoi(getInput(inputConfig))
 	if err != nil {
 		color.Red("Please enter a number")
 		return getInt(EmptyAllowed, RepeatMessage)
@@ -100,29 +131,29 @@ func printCautionSSL() {
 func dirExists(path string) bool {
 	// Stat the file
 	info, err := os.Stat(path)
-
 	// If there is error check if the file is non existent
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false
 		}
 	}
-
 	// Else check if the path is actually a directory and return accordingly
 	return info.IsDir()
 }
 
 func verifyDirInput() string {
 	_, _ = cyan.Print("Root path: ")
-	dirName := getInput(false, false, "Root path: ")
-
+	inputConfig := newGetInputConfig(false, false, "Root path: ")
+	dirName := getInput(inputConfig)
 	if !dirExists(dirName) {
 		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
 		_, _ = cyan.Print("Root path: ")
 		return verifyDirInput()
 	}
+	return dirName
+}
 
-	// Return a absloute path
-	absPath, _ := filepath.Abs(dirName)
+func getAbsolutePath(path string) string {
+	absPath, _ := filepath.Abs(path)
 	return absPath
 }

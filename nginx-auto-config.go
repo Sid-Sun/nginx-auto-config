@@ -48,6 +48,7 @@ func main() {
 		}
 		os.Exit(0)
 	}
+
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun")
 	fmt.Println("Licensed under the MIT License")
@@ -55,27 +56,24 @@ func main() {
 	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun)")
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
+
 	testWritePermissions()
 	server.selection = takeInput()
 	server.port = 443
+
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
 		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
-		server.domains = getInput(false, false, "Server Names: ")
+		inputConfig := newGetInputConfig(false, false, "Server Names: ")
+		server.domains = getInput(inputConfig)
 	}
+
 	if inRange(server.selection, []int{1, 2, 3, 4}) {
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
-		server.root = getInput(false, false, "Root path: ")
-		if !dirExists(server.root) {
-			_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", server.root)
-			_, _ = cyan.Print("Keep non-existent directory (Y[es]/N[o]): ")
-			verifyRoot := !getConsent(true)
-			if verifyRoot {
-				server.root = verifyDirInput()
-			}
-		}
+		server.root = getRoot()
 	}
+
 	if inRange(server.selection, []int{5, 6, 7}) {
 		if server.selection == 6 {
 			fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done)")
@@ -84,30 +82,38 @@ func main() {
 			fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
 			_, _ = cyan.Print("Resource to proxy: ")
 		}
-		server.url = getInput(false, true, "Root path: ")
+		inputConfig := newGetInputConfig(false, true, "Root path: ")
+		server.url = getInput(inputConfig)
 	}
+
 	if server.selection == 7 {
 		fmt.Println("Enter the port number the virtual server should listen to")
 		_, _ = cyan.Print("Port: ")
 		server.port = getInt(false, "Port: ")
 	}
+
 	if server.selection == 8 {
 		server.additional.makeDefaultServer = true
 		server.domains = "_"
 		server.port = 80
 	}
+
 	if server.selection == 9 {
 		os.Exit(0)
 	}
+
 	fmt.Print("Do you want the virtual server to send HSTS preload header with the response?")
 	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/N[o]): ")
 	server.additional.addHSTSConfig = getConsent(true)
+
 	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config)")
 	_, _ = cyan.Print("\nAdd security config (Y[es]/N[o]): ")
 	server.additional.addSecurityConfig = getConsent(true)
+
 	fileName, fileContents := PrepareServiceFileContents(server)
 	fmt.Print(fileContents)
 	_, _ = cyan.Print("Is this correct? (Y[es]/N[o]): ")
+
 	if getConsent(true) {
 		writeContentToFile(fileName+".nginxAutoConfig.conf", fileContents)
 		if server.port == 443 {
