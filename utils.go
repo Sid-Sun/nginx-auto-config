@@ -12,36 +12,44 @@ import (
 	"strings"
 )
 
-type getInputConfig struct {
+type inputConfig struct {
 	EmptyAllowed  bool
 	SingleWorded  bool
 	RepeatMessage string
 }
 
-func newGetInputConfig(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) getInputConfig {
-	return getInputConfig{
+func newInputConfig(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) inputConfig {
+	return inputConfig{
 		EmptyAllowed:  EmptyAllowed,
 		SingleWorded:  SingleWorded,
 		RepeatMessage: RepeatMessage,
 	}
 }
 
-func getRoot() string {
-	inputConfig := newGetInputConfig(false, false, "Root path: ")
-	dir := getInput(inputConfig)
-	if !dirExists(dir) {
-		_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", dir)
+func getRootPath() string {
+	inputConfig := newInputConfig(false, false, "Root path: ")
+	path := getInput(inputConfig)
+	if pathExists, pathInfo := pathExists(path); !pathExists {
+		_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", path)
 		_, _ = cyan.Print("Keep non-existent directory (Y[es]/N[o]): ")
 		verifyRoot := !getConsent(true)
 		if !verifyRoot {
-			return dir
+			return path
 		}
-		dir = verifyDirInput()
+		path = verifyDirInput()
+	} else if !pathInfo.IsDir() {
+		_, _ = yellow.Printf("Path %s is not a directory, do you want to keep this?\n", path)
+		_, _ = cyan.Print("Keep non-directory path as root (Y[es]/N[o]): ")
+		verifyPath := !getConsent(true)
+		if !verifyPath {
+			return getAbsolutePath(path)
+		}
+		path = verifyDirInput()
 	}
-	return getAbsolutePath(dir)
+	return getAbsolutePath(path)
 }
 
-func getInput(config getInputConfig) string {
+func getInput(config inputConfig) string {
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
 	if config.SingleWorded {
@@ -68,7 +76,7 @@ func getInput(config getInputConfig) string {
 }
 
 func getConsent(Default bool) bool {
-	inputConfig := newGetInputConfig(true, true, "")
+	inputConfig := newInputConfig(true, true, "")
 	consent := getInput(inputConfig)
 	if consent == "" {
 		return Default
@@ -77,7 +85,7 @@ func getConsent(Default bool) bool {
 }
 
 func getInt(EmptyAllowed bool, RepeatMessage string) int {
-	inputConfig := newGetInputConfig(EmptyAllowed, true, RepeatMessage)
+	inputConfig := newInputConfig(EmptyAllowed, true, RepeatMessage)
 	input, err := strconv.Atoi(getInput(inputConfig))
 	if err != nil {
 		color.Red("Please enter a number")
@@ -104,20 +112,20 @@ func testWritePermissions() {
 		}
 		println(err.Error())
 		os.Exit(1)
-	} else {
-		_ = newFile.Close()
-		err := os.Remove("nginxAutoConfig.test.txt")
-		if err != nil {
-			println(err.Error())
-		}
+	}
+	_ = newFile.Close()
+	err = os.Remove("nginxAutoConfig.test.txt")
+	if err != nil {
+		println(err.Error())
+		os.Exit(0)
 	}
 }
 
 func writeContentToFile(fileName string, fileContents string) {
-	testWritePermissions()
+	testWritePermissions() // Ensure working directory is still write-able
 	err := ioutil.WriteFile(fileName, []byte(fileContents), 0644)
 	if err != nil {
-		fmt.Println("Something went wrong, please send the log below to Sid Sun.")
+		fmt.Println("Something went wrong, please send the log below to Sid Sun <sid@sidsun.com>")
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -128,25 +136,26 @@ func printCautionSSL() {
 	_, _ = yellow.Println("Caution: SSL config is commented out by default, please generate the key and point to it correctly as necessary.")
 }
 
-func dirExists(path string) bool {
-	// Stat the file
-	info, err := os.Stat(path)
-	// If there is error check if the file is non existent
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
+func pathExists(path string) (bool, os.FileInfo) {
+	var info os.FileInfo
+	var err error
+	if info, err = os.Stat(path); os.IsNotExist(err) {
+		return false, info
 	}
-	// Else check if the path is actually a directory and return accordingly
-	return info.IsDir()
+	// Thence, the path does exist, return true and info
+	return true, info
 }
 
 func verifyDirInput() string {
 	_, _ = cyan.Print("Root path: ")
-	inputConfig := newGetInputConfig(false, false, "Root path: ")
+	inputConfig := newInputConfig(false, false, "Root path: ")
 	dirName := getInput(inputConfig)
-	if !dirExists(dirName) {
-		_, _ = red.Printf("Directory '%v' is non existent, please try again.\n", dirName)
+	if pathExists, fileInfo := pathExists(dirName); !pathExists {
+		_, _ = red.Printf("Path '%v' is non-existent, please try again.\n", dirName)
+		_, _ = cyan.Print("Root path: ")
+		return verifyDirInput()
+	} else if !fileInfo.IsDir() {
+		_, _ = red.Printf("Path '%v' is not a directory, please try again.\n", dirName)
 		_, _ = cyan.Print("Root path: ")
 		return verifyDirInput()
 	}

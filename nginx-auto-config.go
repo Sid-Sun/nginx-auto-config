@@ -36,7 +36,7 @@ func main() {
 		pArg := os.Args[1]
 		if pArg == "-h" || pArg == "-help" || pArg == "--help" {
 			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
-		} else if pArg == "--version" || pArg == "-v" || pArg == "-version" {
+		} else if pArg == "-v" || pArg == "-version" || pArg == "--version" {
 			fmt.Println(version)
 		} else {
 			fmt.Printf(
@@ -57,21 +57,21 @@ func main() {
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
 
-	testWritePermissions()
+	testWritePermissions() // Test writing permissions before proceeding further, Functions exits the program if permissions lack
 	server.selection = takeInput()
 	server.port = 443
 
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
 		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
-		inputConfig := newGetInputConfig(false, false, "Server Names: ")
+		inputConfig := newInputConfig(false, false, "Server Names: ")
 		server.domains = getInput(inputConfig)
 	}
 
 	if inRange(server.selection, []int{1, 2, 3, 4}) {
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
-		server.root = getRoot()
+		server.root = getRootPath()
 	}
 
 	if inRange(server.selection, []int{5, 6, 7}) {
@@ -82,7 +82,7 @@ func main() {
 			fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
 			_, _ = cyan.Print("Resource to proxy: ")
 		}
-		inputConfig := newGetInputConfig(false, true, "Root path: ")
+		inputConfig := newInputConfig(false, true, "Root path: ")
 		server.url = getInput(inputConfig)
 	}
 
