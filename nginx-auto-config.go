@@ -74,12 +74,11 @@ func main() {
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
 		server.root = getRootPath()
-		fmt.Print("Do you want to send caching instructions for assets (CSS, JS, images)?")
-		_, _ = cyan.Print("\nSend Caching instructions (Y[es]/N[o]): ")
+		fmt.Print("Do you want to leverage caching?")
+		_, _ = cyan.Print("\nSetup Caching (Y[es]/N[o]): ")
 		server.additional.addCachingConfig = getConsent(true)
 		if server.additional.addCachingConfig {
-			fmt.Println("How long should the assets be cached? (max age of cached assets)")
-			_, _ = cyan.Print("Max Cache age [1m/4h/2d/1y] (empty for 6h): ")
+			_, _ = cyan.Print("Set cache expiry [1m/4h/2d/1y] (empty for 6h): ")
 			inputConfig := newInputConfig(true, true, "")
 			server.additional.maxCacheAge = getInput(inputConfig)
 		}
@@ -131,7 +130,6 @@ func main() {
 			printCautionSSL()
 		}
 	}
-
 	os.Exit(0)
 }
 
