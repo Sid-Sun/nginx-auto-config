@@ -8,13 +8,12 @@ import (
 	"strings"
 )
 
-const sVers string = "4.3"	// Program Version
+const version string = "5.0" // Program Version
 
 type service struct {
 	selection  int
 	domains    string
 	root       string
-	verifyRoot bool
 	url        string
 	port       int
 	additional additions
@@ -24,6 +23,8 @@ type additions struct {
 	addHSTSConfig     bool
 	addSecurityConfig bool
 	makeDefaultServer bool
+	addCachingConfig  bool
+	maxCacheAge       string
 }
 
 var yellow = color.New(color.FgYellow)
@@ -37,18 +38,19 @@ func main() {
 		pArg := os.Args[1]
 		if pArg == "-h" || pArg == "-help" || pArg == "--help" {
 			fmt.Println("nginx-auto-config is a program which allows you to create configurations for the nginx web server using a number of presets interactively\nLicensed under the MIT license, created by Sidharth Soni (Sid Sun)\nYou can find the source code at: https://github.com/Sid-Sun/nginx-auto-config")
-		} else if pArg == "--version" || pArg == "-v" || pArg == "-version" {
-			fmt.Println(sVers)
+		} else if pArg == "-v" || pArg == "-version" || pArg == "--version" {
+			fmt.Println(version)
 		} else {
 			fmt.Printf(
-					"Unknown option: %s\n" +
-						"Run with -h, -help or --help to get help\n" +
-						"-v, -version or --version to get program version\n" +
-						"Or without any argumets to launch the program interactively\n", pArg)
+				"Unknown option: %s\n"+
+					"Run with -h, -help or --help to get help\n"+
+					"-v, -version or --version to get program version\n"+
+					"Or without any argumets to launch the program interactively\n", pArg)
 			os.Exit(1)
 		}
 		os.Exit(0)
 	}
+
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Println("An interactive program to Automate nginx virtual server creation by Sid Sun")
 	fmt.Println("Licensed under the MIT License")
@@ -56,27 +58,32 @@ func main() {
 	fmt.Println("Copyright (c) 2019 Sidharth Soni (Sid Sun)")
 	fmt.Println("-------------------------------------------------------------------------------")
 	fmt.Printf("Let's  get started!\n\n")
-	testWritePermissions()
+
+	testWritePermissions() // Test writing permissions before proceeding further, Functions exits the program if permissions lack
 	server.selection = takeInput()
 	server.port = 443
+
 	if inRange(server.selection, []int{1, 2, 3, 4, 5, 6, 7}) {
 		fmt.Println("Enter the domain/sub-domain name(s) (separated by space and without ending semicolon)")
 		_, _ = cyan.Print("Server Names: ")
-		server.domains = getInput(false, false)
+		inputConfig := newInputConfig(false, false, "Server Names: ")
+		server.domains = getInput(inputConfig)
 	}
+
 	if inRange(server.selection, []int{1, 2, 3, 4}) {
-		_, _ = cyan.Print("Are you creating this configuration to deploy on this machine? Y[es]/N[o]: ")
-		server.verifyRoot = getConsent()
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
-		var rootPath string
-		if server.verifyRoot {
-			rootPath = verifyDirInput()
-		} else {
-			rootPath = getInput(false, false)
+		server.root = getRootPath()
+		fmt.Print("Do you want to leverage caching?")
+		_, _ = cyan.Print("\nSetup Caching (Y[es]/N[o]): ")
+		server.additional.addCachingConfig = getConsent(true)
+		if server.additional.addCachingConfig {
+			_, _ = cyan.Print("Set cache expiry [1m/4h/2d/1y] (empty for 6h): ")
+			inputConfig := newInputConfig(true, true, "")
+			server.additional.maxCacheAge = getInput(inputConfig)
 		}
-		server.root = rootPath
 	}
+
 	if inRange(server.selection, []int{5, 6, 7}) {
 		if server.selection == 6 {
 			fmt.Println("Enter the resource to redirect all requests to.(EX: http://sidsun.com$request_uri) (Add $request_uri if needed, it'll NOT be automatically done)")
@@ -85,37 +92,44 @@ func main() {
 			fmt.Println("Enter the resource to proxy (EX: http://127.0.0.1:8000 or http://sidsun.com)")
 			_, _ = cyan.Print("Resource to proxy: ")
 		}
-		server.url = getInput(false, true)
+		inputConfig := newInputConfig(false, true, "Root path: ")
+		server.url = getInput(inputConfig)
 	}
+
 	if server.selection == 7 {
 		fmt.Println("Enter the port number the virtual server should listen to")
 		_, _ = cyan.Print("Port: ")
-		server.port = getInt()
+		server.port = getInt(false, "Port: ")
 	}
+
 	if server.selection == 8 {
 		server.additional.makeDefaultServer = true
 		server.domains = "_"
 		server.port = 80
 	}
+
 	if server.selection == 9 {
 		os.Exit(0)
 	}
-	fmt.Print("Do you want the virtual server to send HSTS preload header with the response? (Y[es]/N[o]): ")
+
+	fmt.Print("Do you want the virtual server to send HSTS preload header with the response?")
 	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/N[o]): ")
-	server.additional.addHSTSConfig = getConsent()
-	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config) (Y[es]/N[o]): ")
+	server.additional.addHSTSConfig = getConsent(true)
+
+	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config)")
 	_, _ = cyan.Print("\nAdd security config (Y[es]/N[o]): ")
-	server.additional.addSecurityConfig = getConsent()
+	server.additional.addSecurityConfig = getConsent(true)
+
 	fileName, fileContents := PrepareServiceFileContents(server)
 	fmt.Print(fileContents)
 	_, _ = cyan.Print("Is this correct? (Y[es]/N[o]): ")
-	if getConsent() {
+
+	if getConsent(true) {
 		writeContentToFile(fileName+".nginxAutoConfig.conf", fileContents)
 		if server.port == 443 {
 			printCautionSSL()
 		}
 	}
-
 	os.Exit(0)
 }
 
@@ -141,9 +155,9 @@ func PrepareServiceFileContents(server service) (string, string) {
 	}
 	switch server.selection {
 	case 1:
+		output += "\n    root " + server.root + ";"
 		output += "\n    location / {"
 		output += "\n        index index.html;"
-		output += "\n        root " + server.root + ";"
 		output += "\n    }"
 	case 2:
 		output += "\n    location / {"
@@ -205,6 +219,15 @@ func PrepareServiceFileContents(server service) (string, string) {
 		output += "\n    #Enable the Cross-site scripting (XSS) filter"
 		output += "\n    add_header X-XSS-Protection \"1; mode=block\";"
 	}
+	if server.additional.addCachingConfig {
+		output += "\n    location ~* \\.(js|css|json|png|jpg|jpeg|gif|ico)$ {"
+		if server.additional.maxCacheAge == "" {
+			server.additional.maxCacheAge = "6h"
+		}
+		output += "\n        expires " + server.additional.maxCacheAge + ";"
+		output += "\n        add_header Cache-Control \"public, no-transform\";"
+		output += "\n    }"
+	}
 	output += "\n}\n" //End server block and add newline at EOF
 	return fileName, output
 }
@@ -221,7 +244,7 @@ func takeInput() int {
 	fmt.Println("(8) HTTP requests to HTTPS redirect - Redirects all incoming HTTP traffic to HTTPS (use as default config)")
 	fmt.Println("(9) Exit")
 	_, _ = cyan.Print("What do you want to do: ")
-	input := getInt()
+	input := getInt(false, "What do you want to do: ")
 	if input > 9 || input <= 0 {
 		fmt.Println("Enter a valid number.")
 		return takeInput()
