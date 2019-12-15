@@ -146,9 +146,9 @@ func PrepareServiceFileContents(server service) (string, string) {
 	}
 	switch server.selection {
 	case 1:
+		output += "\n    root " + server.root + ";"
 		output += "\n    location / {"
 		output += "\n        index index.html;"
-		output += "\n        root " + server.root + ";"
 		output += "\n    }"
 	case 2:
 		output += "\n    location / {"

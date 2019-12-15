@@ -42,9 +42,9 @@ func TestPrepareServiceFileContents(t *testing.T) {
     #ssl_certificate_key /etc/letsencrypt/live/sidsun.com/privkey.pem;
     #Send HSTS header
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+    root /srv/www/sid;
     location / {
         index index.html;
-        root /srv/www/sid;
     }
     #Turn off nginx version number displayed on all auto generated error pages
     server_tokens off;
