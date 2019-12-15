@@ -23,6 +23,8 @@ type additions struct {
 	addHSTSConfig     bool
 	addSecurityConfig bool
 	makeDefaultServer bool
+	addCachingConfig  bool
+	maxCacheAge       string
 }
 
 var yellow = color.New(color.FgYellow)
@@ -72,6 +74,15 @@ func main() {
 		fmt.Println("Enter the path where the files are (root path for virtual server)")
 		_, _ = cyan.Print("Root path: ")
 		server.root = getRootPath()
+		fmt.Print("Do you want to send caching instructions for assets (CSS, JS, images)?")
+		_, _ = cyan.Print("\nSend Caching instructions (Y[es]/N[o]): ")
+		server.additional.addCachingConfig = getConsent(true)
+		if server.additional.addCachingConfig {
+			fmt.Println("How long should the assets be cached? (max age of cached assets)")
+			_, _ = cyan.Print("Max Cache age [1m/4h/2d/1y] (empty for 6h): ")
+			inputConfig := newInputConfig(true, true, "")
+			server.additional.maxCacheAge = getInput(inputConfig)
+		}
 	}
 
 	if inRange(server.selection, []int{5, 6, 7}) {
@@ -209,6 +220,15 @@ func PrepareServiceFileContents(server service) (string, string) {
 		output += "\n    add_header X-Content-Type-Options nosniff;"
 		output += "\n    #Enable the Cross-site scripting (XSS) filter"
 		output += "\n    add_header X-XSS-Protection \"1; mode=block\";"
+	}
+	if server.additional.addCachingConfig {
+		output += "\n    location ~* \\.(js|css|json|png|jpg|jpeg|gif|ico)$ {"
+		if server.additional.maxCacheAge == "" {
+			server.additional.maxCacheAge = "6h"
+		}
+		output += "\n        expires " + server.additional.maxCacheAge + ";"
+		output += "\n        add_header Cache-Control \"public, no-transform\";"
+		output += "\n    }"
 	}
 	output += "\n}\n" //End server block and add newline at EOF
 	return fileName, output

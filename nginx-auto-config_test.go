@@ -381,6 +381,89 @@ func TestPrepareServiceFileContents(t *testing.T) {
 }
 `,
 		},
+		{
+			name: "test create service for static website hosting with caching",
+			exec: func() (string, string) {
+				additions := additions{
+					addHSTSConfig:     false,
+					addSecurityConfig: false,
+					makeDefaultServer: false,
+					addCachingConfig:  true,
+					maxCacheAge:       "",
+				}
+				service := service{
+					selection:  1,
+					domains:    "sulabs.ml encrypt.ml",
+					root:       "/srv/www/sulabs",
+					url:        "",
+					port:       443,
+					additional: additions,
+				}
+				return PrepareServiceFileContents(service)
+			},
+			expectedFileName: "sulabs.ml",
+			expectedFileContents: `server {
+    listen 443;
+    listen [::]:443;
+    server_name sulabs.ml encrypt.ml;
+    access_log off;
+    error_log /dev/null crit;
+    #ssl on;
+    #ssl_certificate /etc/letsencrypt/live/sulabs.ml/fullchain.pem;
+    #ssl_certificate_key /etc/letsencrypt/live/sulabs.ml/privkey.pem;
+    root /srv/www/sulabs;
+    location / {
+        index index.html;
+    }
+    location ~* \.(js|css|json|png|jpg|jpeg|gif|ico)$ {
+        expires 6h;
+        add_header Cache-Control "public, no-transform";
+    }
+}
+`,
+		},
+		{
+			name: "test for hosting files without index with caching, HSTS and custom max age",
+			exec: func() (string, string) {
+				additions := additions{
+					addHSTSConfig:     true,
+					addSecurityConfig: false,
+					makeDefaultServer: false,
+					addCachingConfig:  true,
+					maxCacheAge:       "1d",
+				}
+				service := service{
+					selection:  2,
+					domains:    "encrypt.ml",
+					root:       "/srv/www/encrypt.ml",
+					url:        "",
+					port:       443,
+					additional: additions,
+				}
+				return PrepareServiceFileContents(service)
+			},
+			expectedFileName: "encrypt.ml",
+			expectedFileContents: `server {
+    listen 443;
+    listen [::]:443;
+    server_name encrypt.ml;
+    access_log off;
+    error_log /dev/null crit;
+    #ssl on;
+    #ssl_certificate /etc/letsencrypt/live/encrypt.ml/fullchain.pem;
+    #ssl_certificate_key /etc/letsencrypt/live/encrypt.ml/privkey.pem;
+    #Send HSTS header
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";
+    location / {
+        root /srv/www/encrypt.ml;
+    }
+    location ~* \.(js|css|json|png|jpg|jpeg|gif|ico)$ {
+        expires 1d;
+        add_header Cache-Control "public, no-transform";
+    }
+}
+`,
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
