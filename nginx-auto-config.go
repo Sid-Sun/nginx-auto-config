@@ -75,7 +75,7 @@ func main() {
 		_, _ = cyan.Print("Root path: ")
 		server.root = getRootPath()
 		fmt.Print("Do you want to leverage caching?")
-		_, _ = cyan.Print("\nSetup Caching (Y[es]/N[o]): ")
+		_, _ = cyan.Print("\nSetup Caching (Y[es]/n[o]): ")
 		server.additional.addCachingConfig = getConsent(true)
 		if server.additional.addCachingConfig {
 			_, _ = cyan.Print("Set cache expiry [1m/4h/2d/1y] (empty for 6h): ")
@@ -113,16 +113,16 @@ func main() {
 	}
 
 	fmt.Print("Do you want the virtual server to send HSTS preload header with the response?")
-	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/N[o]): ")
+	_, _ = cyan.Print("\nSend HSTS Preload header (Y[es]/n[o]): ")
 	server.additional.addHSTSConfig = getConsent(true)
 
 	fmt.Print("Do you want to add additional security options to the config? (should not but may break the config)")
-	_, _ = cyan.Print("\nAdd security config (Y[es]/N[o]): ")
+	_, _ = cyan.Print("\nAdd security config (Y[es]/n[o]): ")
 	server.additional.addSecurityConfig = getConsent(true)
 
 	fileName, fileContents := PrepareServiceFileContents(server)
 	fmt.Print(fileContents)
-	_, _ = cyan.Print("Is this correct? (Y[es]/N[o]): ")
+	_, _ = cyan.Print("Is this correct? (Y[es]/n[o]): ")
 
 	if getConsent(true) {
 		writeContentToFile(fileName+".nginxAutoConfig.conf", fileContents)
