@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const version string = "5.0" // Program Version
+const version string = "5.0.1" // Program Version
 
 type service struct {
 	selection  int

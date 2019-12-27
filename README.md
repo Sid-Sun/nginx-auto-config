@@ -37,3 +37,23 @@ sudo apt install nginx-auto-config
 ```
 
 :)
+
+### Versioning system:
+
+The version number consists of three parts, namely:
+
+1: Major
+
+2: Minor
+
+3: Infant
+
+Major version is to be updated when using the SAME config, the output generated will differ (ex: bug fix to the output generation system)
+
+Minor version is to be updated when a feature is added or some other change made to the core system that doesn't affect how it behaves with the same effective input
+
+Infant version is to be changed when the change doesn't affect the core system (ex: UX updates)
+
+Versioning system follows a Trickle-down approach (i.e. the version part after the updated part is to be set to 0s)
+
+While we recommend updating to each release, it is highly recommended to update on major and minor version changes
