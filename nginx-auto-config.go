@@ -130,7 +130,6 @@ func main() {
 			printCautionSSL()
 		}
 	}
-	os.Exit(0)
 }
 
 func PrepareServiceFileContents(server service) (string, string) {
