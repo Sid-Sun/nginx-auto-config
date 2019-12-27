@@ -36,8 +36,6 @@ sudo apt update
 sudo apt install nginx-auto-config
 ```
 
-:)
-
 ### Versioning system:
 
 The version number consists of three parts, namely:
@@ -57,3 +55,5 @@ Infant version is to be changed when the change doesn't affect the core system (
 Versioning system follows a Trickle-down approach (i.e. the version part after the updated part is to be set to 0s)
 
 While we recommend updating to each release, it is highly recommended to update on major and minor version changes
+
+:)
