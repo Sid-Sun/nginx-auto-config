@@ -133,7 +133,7 @@ func writeContentToFile(fileName string, fileContents string) {
 }
 
 func printCautionSSL() {
-	_, _ = yellow.Println("Caution: SSL config is commented out by default, please generate the key and point to it correctly as necessary.")
+	_, _ = yellow.Println("Caution: SSL config and listen directives are commented out by default, please generate the key, point to it correctly and uncomment them.")
 }
 
 func pathExists(path string) (bool, os.FileInfo) {
