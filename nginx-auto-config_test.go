@@ -32,12 +32,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "sidsun.com",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name sidsun.com cdn.sidsun.com;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/sidsun.com/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/sidsun.com/privkey.pem;
     #Send HSTS header
@@ -90,12 +90,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "sulabs.org",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name sulabs.org;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/sulabs.org/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/sulabs.org/privkey.pem;
     location / {
@@ -145,12 +145,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "encrypt.ml",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name encrypt.ml;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/encrypt.ml/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/encrypt.ml/privkey.pem;
     #Send HSTS header
@@ -186,12 +186,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "strangebits.co.in",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name strangebits.co.in beta.strangebits.co.in;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/strangebits.co.in/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/strangebits.co.in/privkey.pem;
     root /srv/www/strange;
@@ -229,12 +229,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "sulabs.ml",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name sulabs.ml writewith.me;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/sulabs.ml/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/sulabs.ml/privkey.pem;
     #Send HSTS header
@@ -287,12 +287,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "strangebits.co.in",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name strangebits.co.in readwith.me;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/strangebits.co.in/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/strangebits.co.in/privkey.pem;
     return 308 http://blog.sidsun.com$request_uri;
@@ -340,8 +340,8 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "_",
 			expectedFileContents: `server {
-    listen 4321;
-    listen [::]:4321;
+    listen 4321 http2;
+    listen [::]:4321 http2;
     server_name _;
     access_log off;
     error_log /dev/null crit;
@@ -372,8 +372,8 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "default",
 			expectedFileContents: `server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 80 default_server http2;
+    listen [::]:80 default_server http2;
     server_name _;
     access_log off;
     error_log /dev/null crit;
@@ -403,12 +403,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "sulabs.ml",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name sulabs.ml encrypt.ml;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/sulabs.ml/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/sulabs.ml/privkey.pem;
     root /srv/www/sulabs;
@@ -444,12 +444,12 @@ func TestPrepareServiceFileContents(t *testing.T) {
 			},
 			expectedFileName: "encrypt.ml",
 			expectedFileContents: `server {
-    listen 443;
-    listen [::]:443;
+    #listen 443 ssl http2;
+    #listen [::]:443 ssl http2;
     server_name encrypt.ml;
     access_log off;
     error_log /dev/null crit;
-    #ssl on;
+    #ssl_protocols TLSv1.2 TLSv1.3;
     #ssl_certificate /etc/letsencrypt/live/encrypt.ml/fullchain.pem;
     #ssl_certificate_key /etc/letsencrypt/live/encrypt.ml/privkey.pem;
     #Send HSTS header

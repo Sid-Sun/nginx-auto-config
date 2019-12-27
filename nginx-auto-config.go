@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const version string = "5.0.1" // Program Version
+const version string = "6.0.0" // Program Version
 
 type service struct {
 	selection  int
@@ -135,97 +135,109 @@ func main() {
 func PrepareServiceFileContents(server service) (string, string) {
 	fileName := strings.Fields(server.domains)[0]
 	output := "server {"
+	newLine := "\n    "
+	ipv4listenString := "listen " + strconv.Itoa(server.port)
+	ipv6listenString := "listen [::]:" + strconv.Itoa(server.port)
 	if server.additional.makeDefaultServer {
-		output += "\n    listen " + strconv.Itoa(server.port) + " default_server;\n    listen [::]:" + strconv.Itoa(server.port) + " default_server;"
-	} else {
-		output += "\n    listen " + strconv.Itoa(server.port) + ";\n    listen [::]:" + strconv.Itoa(server.port) + ";"
+		ipv4listenString += " default_server"
+		ipv6listenString += " default_server"
 	}
-	output += "\n    server_name " + server.domains + ";"
-	output += "\n    access_log off;"
-	output += "\n    error_log /dev/null crit;"
 	if server.port == 443 {
-		output += "\n    #ssl on;"
-		output += "\n    #ssl_certificate /etc/letsencrypt/live/" + fileName + "/fullchain.pem;"
-		output += "\n    #ssl_certificate_key /etc/letsencrypt/live/" + fileName + "/privkey.pem;"
+		ipv4listenString += " ssl"
+		ipv6listenString += " ssl"
+		ipv4listenString = "#" + ipv4listenString
+		ipv6listenString = "#" + ipv6listenString
+	}
+	ipv4listenString += " http2;"
+	ipv6listenString += " http2;"
+	output += newLine + ipv4listenString
+	output += newLine + ipv6listenString
+	output += newLine + "server_name " + server.domains + ";"
+	output += newLine + "access_log off;"
+	output += newLine + "error_log /dev/null crit;"
+	if server.port == 443 {
+		output += newLine + "#ssl_protocols TLSv1.2 TLSv1.3;"
+		output += newLine + "#ssl_certificate /etc/letsencrypt/live/" + fileName + "/fullchain.pem;"
+		output += newLine + "#ssl_certificate_key /etc/letsencrypt/live/" + fileName + "/privkey.pem;"
 	}
 	if server.additional.addHSTSConfig {
-		output += "\n    #Send HSTS header"
-		output += "\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\";"
+		output += newLine + "#Send HSTS header"
+		output += newLine + "add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\";"
 	}
 	switch server.selection {
 	case 1:
-		output += "\n    root " + server.root + ";"
-		output += "\n    location / {"
-		output += "\n        index index.html;"
-		output += "\n    }"
+		output += newLine + "root " + server.root + ";"
+		output += newLine + "location / {"
+		output += newLine + "    index index.html;"
+		output += newLine + "}"
 	case 2:
-		output += "\n    location / {"
-		output += "\n        root " + server.root + ";"
-		output += "\n    }"
+		output += newLine + "location / {"
+		output += newLine + "    root " + server.root + ";"
+		output += newLine + "}"
 	case 3:
-		output += "\n    root " + server.root + ";"
-		output += "\n    index index.html;"
-		output += "\n    location / {"
-		output += "\n        try_files $uri $uri/ @rewrites;"
-		output += "\n    }"
-		output += "\n    location @rewrites {"
-		output += "\n        rewrite ^(.+)$ /index.html last;"
-		output += "\n    }"
+		output += newLine + "root " + server.root + ";"
+		output += newLine + "index index.html;"
+		output += newLine + "location / {"
+		output += newLine + "    try_files $uri $uri/ @rewrites;"
+		output += newLine + "}"
+		output += newLine + "location @rewrites {"
+		output += newLine + "    rewrite ^(.+)$ /index.html last;"
+		output += newLine + "}"
 	case 4:
-		output += "\n    root " + server.root + ";"
-		output += "\n    index index.php;"
-		output += "\n    location / {"
-		output += "\n        try_files $uri $uri/ =404;"
-		output += "\n        autoindex  on;"
-		output += "\n        autoindex_exact_size off;"
-		output += "\n        autoindex_localtime on;"
-		output += "\n    }"
-		output += "\n    location ~* \\.php$ {"
-		output += "\n        include snippets/fastcgi-php.conf;"
-		output += "\n        fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;"
-		output += "\n    }"
+		output += newLine + "root " + server.root + ";"
+		output += newLine + "index index.php;"
+		output += newLine + "location / {"
+		output += newLine + "    try_files $uri $uri/ =404;"
+		output += newLine + "    autoindex  on;"
+		output += newLine + "    autoindex_exact_size off;"
+		output += newLine + "    autoindex_localtime on;"
+		output += newLine + "}"
+		output += newLine + "location ~* \\.php$ {"
+		output += newLine + "    include snippets/fastcgi-php.conf;"
+		output += newLine + "    fastcgi_pass  unix:/var/run/php/php7.2-fpm.sock;"
+		output += newLine + "}"
 	case 5, 7:
-		output += "\n    location / {"
-		output += "\n        proxy_pass " + server.url + ";"
-		output += "\n        proxy_read_timeout  90;"
-		output += "\n    }"
+		output += newLine + "location / {"
+		output += newLine + "    proxy_pass " + server.url + ";"
+		output += newLine + "    proxy_read_timeout  90;"
+		output += newLine + "}"
 	case 6:
-		output += "\n    return 308 " + server.url + ";"
+		output += newLine + "return 308 " + server.url + ";"
 	case 8:
 		fileName = "default"
-		output += "\n    return 308 https://$host$request_uri;"
+		output += newLine + "return 308 https://$host$request_uri;"
 	}
 	if server.additional.addSecurityConfig {
-		output += "\n    #Turn off nginx version number displayed on all auto generated error pages"
-		output += "\n    server_tokens off;"
-		output += "\n    #Controlling Buffer Overflow Attacks"
-		output += "\n    #Start: Size Limits & Buffer Overflows"
-		output += "\n    client_body_buffer_size 1K;"
-		output += "\n    client_header_buffer_size 1k;"
-		output += "\n    client_max_body_size 1k;"
-		output += "\n    large_client_header_buffers 2 1k;"
-		output += "\n    #END: Size Limits & Buffer Overflows"
-		output += "\n    #Start: Timeouts"
-		output += "\n    client_body_timeout 10;"
-		output += "\n    client_header_timeout 10;"
-		output += "\n    keepalive_timeout 5 5;"
-		output += "\n    send_timeout 10;"
-		output += "\n    #End: Timeout"
-		output += "\n    #Avoid clickjacking"
-		output += "\n    add_header X-Frame-Options SAMEORIGIN;"
-		output += "\n    #Disable content-type sniffing on some browsers"
-		output += "\n    add_header X-Content-Type-Options nosniff;"
-		output += "\n    #Enable the Cross-site scripting (XSS) filter"
-		output += "\n    add_header X-XSS-Protection \"1; mode=block\";"
+		output += newLine + "#Turn off nginx version number displayed on all auto generated error pages"
+		output += newLine + "server_tokens off;"
+		output += newLine + "#Controlling Buffer Overflow Attacks"
+		output += newLine + "#Start: Size Limits & Buffer Overflows"
+		output += newLine + "client_body_buffer_size 1K;"
+		output += newLine + "client_header_buffer_size 1k;"
+		output += newLine + "client_max_body_size 1k;"
+		output += newLine + "large_client_header_buffers 2 1k;"
+		output += newLine + "#END: Size Limits & Buffer Overflows"
+		output += newLine + "#Start: Timeouts"
+		output += newLine + "client_body_timeout 10;"
+		output += newLine + "client_header_timeout 10;"
+		output += newLine + "keepalive_timeout 5 5;"
+		output += newLine + "send_timeout 10;"
+		output += newLine + "#End: Timeout"
+		output += newLine + "#Avoid clickjacking"
+		output += newLine + "add_header X-Frame-Options SAMEORIGIN;"
+		output += newLine + "#Disable content-type sniffing on some browsers"
+		output += newLine + "add_header X-Content-Type-Options nosniff;"
+		output += newLine + "#Enable the Cross-site scripting (XSS) filter"
+		output += newLine + "add_header X-XSS-Protection \"1; mode=block\";"
 	}
 	if server.additional.addCachingConfig {
-		output += "\n    location ~* \\.(js|css|json|png|jpg|jpeg|gif|ico)$ {"
+		output += newLine + "location ~* \\.(js|css|json|png|jpg|jpeg|gif|ico)$ {"
 		if server.additional.maxCacheAge == "" {
 			server.additional.maxCacheAge = "6h"
 		}
-		output += "\n        expires " + server.additional.maxCacheAge + ";"
-		output += "\n        add_header Cache-Control \"public, no-transform\";"
-		output += "\n    }"
+		output += newLine + "    expires " + server.additional.maxCacheAge + ";"
+		output += newLine + "    add_header Cache-Control \"public, no-transform\";"
+		output += newLine + "}"
 	}
 	output += "\n}\n" //End server block and add newline at EOF
 	return fileName, output
