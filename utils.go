@@ -31,7 +31,7 @@ func getRootPath() string {
 	path := getInput(inputConfig)
 	if pathExists, pathInfo := pathExists(path); !pathExists {
 		_, _ = yellow.Printf("%s does not exist on this machine, do you want to keep this?\n", path)
-		_, _ = cyan.Print("Keep non-existent directory (Y[es]/N[o]): ")
+		_, _ = cyan.Print("Keep non-existent directory (Y[es]/n[o]): ")
 		verifyRoot := !getConsent(true)
 		if !verifyRoot {
 			return path
@@ -39,7 +39,7 @@ func getRootPath() string {
 		path = verifyDirInput()
 	} else if !pathInfo.IsDir() {
 		_, _ = yellow.Printf("Path %s is not a directory, do you want to keep this?\n", path)
-		_, _ = cyan.Print("Keep non-directory path as root (Y[es]/N[o]): ")
+		_, _ = cyan.Print("Keep non-directory path as root (Y[es]/n[o]): ")
 		verifyPath := !getConsent(true)
 		if !verifyPath {
 			return getAbsolutePath(path)
