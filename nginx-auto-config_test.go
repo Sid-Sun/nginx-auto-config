@@ -15,20 +15,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for static website hosting with HSTS, Security",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     true,
-					addSecurityConfig: true,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     true,
+					AddSecurityConfig: true,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  1,
-					domains:    "sidsun.com cdn.sidsun.com",
-					root:       "/srv/www/sid",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  1,
+					Domains:    "sidsun.com cdn.sidsun.com",
+					Root:       "/srv/www/sid",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "sidsun.com",
 			expectedFileContents: `server {
@@ -73,20 +73,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for hosting files without index with Security",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: true,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: true,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  2,
-					domains:    "sulabs.org",
-					root:       "/srv/www/su",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  2,
+					Domains:    "sulabs.org",
+					Root:       "/srv/www/su",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "sulabs.org",
 			expectedFileContents: `server {
@@ -128,20 +128,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for routed webapp hosting with HSTS",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     true,
-					addSecurityConfig: false,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     true,
+					AddSecurityConfig: false,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  3,
-					domains:    "encrypt.ml",
-					root:       "/srv/www/encrypt",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  3,
+					Domains:    "encrypt.ml",
+					Root:       "/srv/www/encrypt",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "encrypt.ml",
 			expectedFileContents: `server {
@@ -169,20 +169,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for basic PHP Website hosting",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: false,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: false,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  4,
-					domains:    "strangebits.co.in beta.strangebits.co.in",
-					root:       "/srv/www/strange",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  4,
+					Domains:    "strangebits.co.in beta.strangebits.co.in",
+					Root:       "/srv/www/strange",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "strangebits.co.in",
 			expectedFileContents: `server {
@@ -212,20 +212,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for Proxy requests with HSTS and security",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     true,
-					addSecurityConfig: true,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     true,
+					AddSecurityConfig: true,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  5,
-					domains:    "sulabs.ml writewith.me",
-					root:       "",
-					url:        "https://blog.sidsun.com",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  5,
+					Domains:    "sulabs.ml writewith.me",
+					Root:       "",
+					URL:        "https://blog.sidsun.com",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "sulabs.ml",
 			expectedFileContents: `server {
@@ -270,20 +270,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for Permanent URL redirection with security",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: true,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: true,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  6,
-					domains:    "strangebits.co.in readwith.me",
-					root:       "",
-					url:        "http://blog.sidsun.com$request_uri",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  6,
+					Domains:    "strangebits.co.in readwith.me",
+					Root:       "",
+					URL:        "http://blog.sidsun.com$request_uri",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "strangebits.co.in",
 			expectedFileContents: `server {
@@ -323,20 +323,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for basic proxy with custom port",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: false,
-					makeDefaultServer: false,
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: false,
+					MakeDefaultServer: false,
 				}
-				service := service{
-					selection:  7,
-					domains:    "_",
-					root:       "",
-					url:        "http://127.0.0.1:5000",
-					port:       4321,
-					additional: additions,
+				service := Service{
+					Selection:  7,
+					Domains:    "_",
+					Root:       "",
+					URL:        "http://127.0.0.1:5000",
+					Port:       4321,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "_",
 			expectedFileContents: `server {
@@ -355,20 +355,20 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create default service without HSTS	and security config",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: false,
-					makeDefaultServer: true,
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: false,
+					MakeDefaultServer: true,
 				}
-				service := service{
-					selection:  8,
-					domains:    "_",
-					root:       "",
-					url:        "",
-					port:       80,
-					additional: additions,
+				service := Service{
+					Selection:  8,
+					Domains:    "_",
+					Root:       "",
+					URL:        "",
+					Port:       80,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "default",
 			expectedFileContents: `server {
@@ -384,22 +384,22 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test create service for static website hosting with caching",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     false,
-					addSecurityConfig: false,
-					makeDefaultServer: false,
-					addCachingConfig:  true,
-					maxCacheAge:       "",
+				additions := Additions{
+					AddHSTSConfig:     false,
+					AddSecurityConfig: false,
+					MakeDefaultServer: false,
+					AddCachingConfig:  true,
+					MaxCacheAge:       "",
 				}
-				service := service{
-					selection:  1,
-					domains:    "sulabs.ml encrypt.ml",
-					root:       "/srv/www/sulabs",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  1,
+					Domains:    "sulabs.ml encrypt.ml",
+					Root:       "/srv/www/sulabs",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "sulabs.ml",
 			expectedFileContents: `server {
@@ -425,22 +425,22 @@ func TestPrepareServiceFileContents(t *testing.T) {
 		{
 			name: "test for hosting files without index with caching, HSTS and custom max age",
 			exec: func() (string, string) {
-				additions := additions{
-					addHSTSConfig:     true,
-					addSecurityConfig: false,
-					makeDefaultServer: false,
-					addCachingConfig:  true,
-					maxCacheAge:       "1d",
+				additions := Additions{
+					AddHSTSConfig:     true,
+					AddSecurityConfig: false,
+					MakeDefaultServer: false,
+					AddCachingConfig:  true,
+					MaxCacheAge:       "1d",
 				}
-				service := service{
-					selection:  2,
-					domains:    "encrypt.ml",
-					root:       "/srv/www/encrypt.ml",
-					url:        "",
-					port:       443,
-					additional: additions,
+				service := Service{
+					Selection:  2,
+					Domains:    "encrypt.ml",
+					Root:       "/srv/www/encrypt.ml",
+					URL:        "",
+					Port:       443,
+					Additional: additions,
 				}
-				return PrepareServiceFileContents(service)
+				return prepareServiceFileContents(service)
 			},
 			expectedFileName: "encrypt.ml",
 			expectedFileContents: `server {

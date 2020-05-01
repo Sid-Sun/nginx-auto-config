@@ -1,3 +1,5 @@
 .idea
 nginx-auto-config
 nginx-auto-config.exe
+*.conf
+*.toml
