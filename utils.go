@@ -3,19 +3,42 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/fatih/color"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type inputConfig struct {
 	EmptyAllowed  bool
 	SingleWorded  bool
 	RepeatMessage string
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func readFromFile(filePath string) []byte {
+	// Check if file exists and if not, print
+	if fileExists(filePath) {
+		data, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			panic(err.Error())
+		}
+		return data
+	}
+	fmt.Println("File:", filePath, "seems to be nonexistent")
+	os.Exit(0)
+	return nil
 }
 
 func newInputConfig(EmptyAllowed bool, SingleWorded bool, RepeatMessage string) inputConfig {
@@ -121,15 +144,12 @@ func testWritePermissions() {
 	}
 }
 
-func writeContentToFile(fileName string, fileContents string) {
-	testWritePermissions() // Ensure working directory is still write-able
-	err := ioutil.WriteFile(fileName, []byte(fileContents), 0644)
+func writeContentToFile(fileName string, fileContents []byte) error {
+	err := ioutil.WriteFile(fileName, fileContents, 0644)
 	if err != nil {
-		fmt.Println("Something went wrong, please send the log below to Sid Sun <sid@sidsun.com>")
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
-	fmt.Printf("Config written to %s, move it to the appropriate config folder and reload the nginx webserver, Enjoy!\n", fileName)
+	return nil
 }
 
 func printCautionSSL() {
